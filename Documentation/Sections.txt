@@ -1,0 +1,104 @@
+
+Fulllevel Breakdown. 
+Once the user logs into the non user facing home page the user is met with the dashboard. 
+
+Dashboard - Dashboard shows the estimate of your electricity
+
+Map My house - Mapping your house allows the user to create the floor plan of their house which will be used late. The page consists of a starting one floor and the user can add rooms to said floor and then if it is a two story or even three story house they can add the floors + rooms on said floors. we will give users generic rooms to choos form and can even create their own e.g "liams room"
+
+
+
+My Appliances - So mapping your house can actually be functional as appliances chosen from the database i will make can be assigned to any of said rooms. Having appliances assigned to rooms helps me later in the watch your watts section as you can see what room has the most electricity .
+
+Watch Your Watts - Watch your watts consists f pie chart of appliaces/electricity costs per room, It has the "biggest eaters"  showing the top 5 most electricity takers. and also shows your predicted costs over the next few weeks if you lower your costs.
+Product Spec Style (for developers/designers)
+
+1. Dashboard
+
+Purpose: Provide users with a high-level overview of electricity usage.
+
+Features:
+
+Display estimated consumption and cost in real-time.
+
+Serve as the entry point for deeper insights.
+
+2. Map My House
+
+Purpose: Create a structured digital representation of the user’s home.
+
+Features:
+
+Start with a single floor and allow additional floors to be added.
+
+Add and customize rooms (from generic templates or user-defined names).
+
+Maintain a hierarchical data structure: House → Floors → Rooms.
+
+3. My Appliances
+
+Purpose: Assign appliances to specific rooms for targeted energy tracking.
+
+Features:
+
+Select appliances from a predefined appliance database.
+
+Link each appliance to a room in the floor plan.
+
+Store appliance consumption profiles for later analytics.
+
+4. Watch Your Watts
+
+Purpose: Provide actionable energy insights and predictions.
+
+Features:
+
+Pie chart: electricity consumption per room.
+
+“Biggest Eaters”: top five highest-consuming appliances.
+
+Forecast module: predicted future costs and savings based on adjusted usage.
+
+🔹 User-Facing Explanatory Style (like marketing copy)
+
+Dashboard
+See your electricity usage at a glance. The dashboard gives you a clear estimate of your energy consumption and costs right when you log in.
+
+Map My House
+Build your home digitally. Start with one floor and add as many rooms as you like. Got a two- or three-story home? Add extra floors too. Choose from common room types, or personalize your setup with custom names like “Liam’s Room.”
+
+My Appliances
+Bring your rooms to life by assigning appliances. Pick from our database of household appliances and link them to specific rooms. This makes it easy to see exactly where your energy is being used.
+
+Watch Your Watts
+Turn data into insight.
+
+See which rooms use the most electricity with interactive pie charts.
+
+Discover your “Biggest Eaters” — the top 5 appliances that drain the most power.
+
+Look ahead with predictive cost estimates, showing how much you could save by reducing usage.
+
+Front end
+
+inside src is public/ and private/ pages
+
+pubic/ is where our index and auth pages will go do you think?
+git init
+git add .
+git commit -m "
+feat:
+- Implemented manual User entity (removed Lombok dependency)
+- Fixed compilation issues with missing getters/setters
+- Resolved AuthenticationManager circular dependency via @Lazy injection
+- Verified JWT-based login and registration working with frontend
+
+difficultys:
+This update resolves several days of iterative debugging involving:
+1. Environment setup (Java 17, Maven, Spring Boot)
+2. SQLite dialect conflicts
+3. Lombok annotation removal and manual user model rewrite
+4. Authentication bean dependency loop
+5. JWT key length and weak-secret validation
+
+result: Successful login and token issuance confirmed via frontend."

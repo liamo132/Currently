@@ -1,0 +1,171 @@
+
+
+
+/* ----- Section Container ----- */
+.features {
+  padding: 60px 20px;
+  background: var(--color-offwhite);
+}
+
+/* Centers the heading and description text */
+.features .what-to-expect {
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Section heading */
+.features h2 {
+  font-size: 2.6rem;
+  margin-bottom: 8px;
+  color: #10b981; /* primary green accent */
+}
+
+/* Subtitle under main heading */
+.features .subtitle {
+  color: #111827;
+  opacity: 0.85;
+  margin-bottom: 24px;
+}
+
+/* ----- Carousel Container ----- */
+.carousel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  padding: 0 25px 30px;
+  border-radius: 10px;
+}
+
+/* Holds the rotating slides */
+.carousel-track {
+  width: 720px;
+  height: 420px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Each slide (image + animation setup) */
+.carousel-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transform: scale(0.98);
+  transition: opacity 360ms ease, transform 360ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Active slide is visible and slightly larger */
+.carousel-slide.active {
+  opacity: 1;
+  transform: scale(1);
+  z-index: 2;
+}
+
+/* Image appearance */
+.carousel-slide img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(2, 201, 251, 0.08);
+}
+
+/* ----- Navigation Buttons (optional if re-added) ----- */
+.carousel-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.8rem;
+  color: var(--color-accent-dark);
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.carousel-btn:hover {
+  transform: translateY(-4px);
+  background: rgba(2, 201, 251, 0.08);
+}
+
+.carousel-btn.prev {
+  position: absolute;
+  left: calc(50% - 380px);
+}
+
+.carousel-btn.next {
+  position: absolute;
+  right: calc(50% - 380px);
+}
+
+/* ----- Dots & Caption ----- */
+.carousel-dots {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* Caption under each image */
+.carousel-caption {
+  margin-top: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-accent-dark);
+  opacity: 0.95;
+  min-height: 1.4em; /* prevents layout jump when captions change */
+}
+
+/* Pagination dots */
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  border: 1px solid #0f976a;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+/* Active dot highlighted */
+.dot.active {
+  background: #10b981;
+}
+
+/* ----- Responsive Adjustments ----- */
+@media (max-width: 880px) {
+  .carousel-track {
+    width: 560px;
+    height: 320px;
+  }
+  .carousel-btn.prev {
+    left: calc(50% - 300px);
+  }
+  .carousel-btn.next {
+    right: calc(50% - 300px);
+  }
+}
+
+@media (max-width: 600px) {
+  .carousel-track {
+    width: 100%;
+    height: 220px;
+  }
+  .carousel-btn.prev {
+    left: 8px;
+  }
+  .carousel-btn.next {
+    right: 8px;
+  }
+}
