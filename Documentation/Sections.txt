@@ -102,3 +102,189 @@ This update resolves several days of iterative debugging involving:
 5. JWT key length and weak-secret validation
 
 result: Successful login and token issuance confirmed via frontend."
+
+
+
+git push origin main
+
+
+
+git checkout insecure
+git add .
+git commit -m "feat: add insecure database schema with plaintext passwords and stored XSS support
+add insecure authentication module with plaintext passwords and reflected XSS
+add insecure ticket system with SQL injection, stored XSS, and IDOR vulnerabilities
+add insecure admin module with stored XSS and sensitive log exposure"
+git push origin insecure
+
+
+--------------------------
+INSECURE
+----------------------------
+1.
+
+git checkout insecure
+git add insecure/src/views/layout.ejs
+git add insecure/src/views/login.ejs
+git add insecure/src/views/register.ejs
+
+git commit -m "feat: add basic insecure layout and authentication views with reflected XSS support"
+git push origin insecure
+
+/////dojne
+
+2.
+
+git checkout insecure
+
+git add src/views/tickets/list.ejs
+git add src/views/tickets/new.ejs
+git add src/views/tickets/detail.ejs
+
+git commit -m "feat: add insecure ticket views with SQL injection search, stored XSS, and DOM-based XSS preview"
+git push origin insecure
+//////////done
+
+
+3.
+git checkout insecure
+
+git add insecure/src/views/admin/dashboard.ejs
+git add insecure/src/views/admin/ticket_detail.ejs
+git add insecure/src/views/admin/logs.ejs
+
+git commit -m "feat: add insecure admin views with stored XSS, IDOR access and unsafe log exposure"
+git push origin insecure
+
+
+///done
+
+5.
+git checkout insecure
+
+git add insecure/src/public/js/domPreview.js
+
+git commit -m "feat: add DOM-based XSS preview script which shows the application is unsafe from innerHTML injection"
+git push origin insecure
+
+//done
+
+6.
+git add insecure/src/public/css/styles.css
+git commit -m "style: add simple stylesheet for insecure ServiceDesk views"
+git push origin insecure
+
+git commit -m "fix: ticket details error fixed for botgh user and admin. add: admin can change status of ticket"
+//done
+
+7.make sure it works with opening and viewong tickets
+
+--------------------------------------------
+SECURE
+-------------------------------------------
+
+1. 
+git checkout secure
+git add secure/src
+git commit -m "feat: skeleton for secure app created & dependencies installed
+
+2.
+git add secure/src/db.js
+git commit -m "feat: skeleton for secure app created and dependencies installed, added secure database schema with bcrypt hashed passwords and safer logging"
+git push origin secure
+
+git add secure/src/app.js
+git commit -m "feat: configure secure Express app with Helmet, CSRF protection, secure sessions, and logging"
+git push origin secure
+//done
+
+3.
+git add secure/src/routes/authRoutes.js
+git commit -m "feat: implement secure authentication with bcrypt hashing and safe error handling"
+git push origin secure
+
+//done
+4.
+git commit -m "feat: add s"
+
+5.
+git checkout secure
+
+git add secure/src/views/layout.ejs
+git add secure/src/views/login.ejs
+git add secure/src/views/register.ejs
+git add secure/src/views/tickets/list.ejs
+git add secure/src/views/tickets/new.ejs
+git add secure/src/views/tickets/detail.ejs
+
+git commit -m "feat: add ecure ticket routes with parameterised queries, IDOR protection and XSS mitigationsecure AND views with escaped output and CSRF protection for authentication and ticket system"
+git push origin secure
+
+//done
+6.
+
+cd "C:\Users\User\Desktop\CA3 - SAP - LiamConnell\servicedesk-app"
+git checkout secure
+
+git add secure/src/routes/adminRoutes.js
+git add secure/src/views/admin/dashboard.ejs
+git add secure/src/views/admin/ticket_detail.ejs
+git add secure/src/views/admin/logs.ejs
+git add secure/src/app.js
+
+git commit -m "feat: add secure admin module with role enforcement, parameterised queries, and safe views"
+git push origin secure
+
+//done
+
+
+7.
+git checkout secure
+git add secure/src/public/css/styles.css
+git commit -m "style: add minimal secure CSS styling"
+git push origin secure
+
+//done
+8.
+last fixes: complete secure ServiceDesk application with full OWASP protections, fixed routing errors, EJS bugs and DB schema issues
+
+Summary:
+This commit finalises the secure version of the ServiceDesk Help Desk System. 
+Includes full security hardening, correct role-based access control, user/admin 
+comment separation, CSRF protection, secure session handling, CSP headers, and 
+parameterised SQL queries. Also resolves all structural bugs encountered during
+development.
+
+Major additions:
+- Implemented secure auth (bcrypt hashing, safe error messages, login protection)
+- Added secure ticket system with SQLi mitigation, IDOR prevention and validation
+- Completed secure admin panel with separate admin/user comment visibility
+- Added CSRF tokens globally via csurf middleware
+- Added Helmet (CSP, referrer policy, secure headers)
+- Secure session cookies (httpOnly, sameSite)
+- Centralised logging with high-level, non-sensitive log messages
+- Added user_comments table and integrated with ticket detail views
+- Fully separated admin_comments vs user_comments for correct privilege boundaries
+- Added unified styles.css for consistent secure UI
+
+Fixes and setbacks encountered:
+- Resolved “handler must be a function” error caused by misplaced middleware order
+- Fixed EJS template failures (“Could not find matching close tag for <%-”) due to 
+  EJS syntax inside backtick literals
+- Corrected broken include paths for admin/ticket_detail.ejs
+- Fixed ReferenceError: currentUser was undefined in secure layout
+- Debugged POST /login throwing 500 due to missing csrfToken exposure
+- Fixed wrong variable names (comments → adminComments/userComments)
+- Rewrote admin ticket detail view to correctly display both user and admin comments
+- Corrected SQL schema: recreated user_comments table after accidental creation 
+  without 'comment' column
+- Removed PowerShell-escaped backslashes in template string logEvent() calls
+- Cleaned directory structure and ensured secure/css and secure/js load correctly
+
+This commit represents the final stable, secure implementation of the ServiceDesk 
+application with all discovered issues resolved.
+
+
+
+
+git push origin secure
