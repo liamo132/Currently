@@ -1,57 +1,46 @@
+// src/private/myappliances/appliancecard.jsx
+import React from "react";
+import "./css/appliancecard.css";
+
 /*
- * File: appliancecard.jsx
- * Description: Presentational card for a single user-selected appliance, showing
- *              base info from appliances.json and editable usage fields.
- * Author: Liam Connell
- * Date: 2025-12-01
- */
-
-import React from 'react';
-import './css/appliancecard.css';
-
-/**
- * Component: ApplianceCard
- * Purpose:
- *   Display an appliance selected by the user, including:
- *   - Base catalogue information (name, category, watts)
- *   - User-specific fields (custom name, hoursPerDay / usesPerDay)
- *   - Derived values (daily kWh, estimated daily cost)
- *
  * Props:
- *   - appliance: UserApplianceResponse from backend
- *       { id, applianceName, customName, usageType,
- *         hoursPerDay, usesPerDay, dailyKWh, estimatedDailyCost }
- *   - baseAppliance: matching catalogue entry from appliances.json
- *       { name, category, usageType, averageWatts, averageWattsPerUse,
- *         defaultHoursPerDay, defaultUsesPerDay }
- *   - onUpdate: function(id, updatedFields) → called when user edits fields
- *   - onRemove: function(id) → called when user clicks remove
+ *  - appliance: {
+ *      id, applianceName, customName,
+ *      usageType ("continuous" | "perUse"),
+ *      hoursPerDay, usesPerDay,
+ *      roomId, roomName
+ *    }
+ *  - baseAppliance: from /api/appliances for extra metadata (optional)
+ *  - rooms: [{ id, name, floorLabel }]
+ *  - onUpdate(id, partialFields)
+ *  - onRemove(id)
  */
-export default function ApplianceCard({ appliance, baseAppliance, onUpdate, onRemove }) {
-  const isContinuous = appliance.usageType === 'continuous';
 
-  // Function: handleChange
-  // Purpose:
-  //   Wrap field updates and send them to the parent with the appliance id.
+export default function ApplianceCard({
+  appliance,
+  baseAppliance,
+  rooms,
+  onUpdate,
+  onRemove,
+}) {
   const handleChange = (field, value) => {
     onUpdate(appliance.id, { [field]: value });
   };
 
-  const displayName = appliance.customName || appliance.applianceName;
-  const usageLabel = isContinuous ? 'Hours Used Per Day' : 'Uses Per Day';
+  const isContinuous = appliance.usageType === "continuous";
+  const usageLabel = isContinuous ? "Hours used per day" : "Uses per day";
 
-  const safeDailyKWh = appliance.dailyKWh ?? 0;
-  const safeDailyCost = appliance.estimatedDailyCost ?? 0;
+  const currentRoomId = appliance.roomId ?? null;
 
   return (
     <div className="appliance-card">
-      {/* Header: editable custom name + remove button */}
       <div className="card-header">
         <input
           type="text"
-          value={displayName}
-          onChange={(e) => handleChange('customName', e.target.value)}
+          value={appliance.customName || appliance.applianceName || ""}
+          onChange={(e) => handleChange("customName", e.target.value)}
           className="appliance-name"
+          placeholder="Appliance name"
         />
         <button
           className="remove-btn"
@@ -62,66 +51,84 @@ export default function ApplianceCard({ appliance, baseAppliance, onUpdate, onRe
         </button>
       </div>
 
-      {/* Main grid fields */}
+      {/* Optional subtext showing base appliance info */}
+      {baseAppliance && (
+        <div className="appliance-subtitle">
+          <span className="appliance-base-name">
+            {baseAppliance.name} ({baseAppliance.category})
+          </span>
+        </div>
+      )}
+
       <div className="card-fields">
-        {/* Base catalogue info: name + category */}
+        {/* Room selection */}
         <div className="field-group">
-          <label>Catalogue Name</label>
-          <div className="readonly-text">
-            {baseAppliance ? baseAppliance.name : appliance.applianceName}
-          </div>
-        </div>
-
-        <div className="field-group">
-          <label>Category</label>
-          <div className="readonly-text">
-            {baseAppliance ? baseAppliance.category : 'N/A'}
-          </div>
-        </div>
-
-        {/* Base technical info */}
-        <div className="field-group">
-          <label>{isContinuous ? 'Average Watts' : 'Average Watts per Use'}</label>
-          <div className="readonly-text">
-            {isContinuous
-              ? baseAppliance?.averageWatts ?? 'N/A'
-              : baseAppliance?.averageWattsPerUse ?? 'N/A'}
-          </div>
-        </div>
-
-        {/* Usage input (hoursPerDay or usesPerDay) */}
-        <div className="field-group">
-          <label>{usageLabel}</label>
-          <input
-            type="number"
-            className="input-field"
-            min="0"
-            step="0.1"
-            value={
-              isContinuous
-                ? appliance.hoursPerDay ?? baseAppliance?.defaultHoursPerDay ?? 0
-                : appliance.usesPerDay ?? baseAppliance?.defaultUsesPerDay ?? 0
-            }
+          <label>Room</label>
+          <select
+            value={currentRoomId !== null ? String(currentRoomId) : "none"}
             onChange={(e) => {
-              const value = parseFloat(e.target.value) || 0;
-              if (isContinuous) {
-                handleChange('hoursPerDay', value);
+              const val = e.target.value;
+              if (val === "none") {
+                handleChange("roomId", null);
               } else {
-                handleChange('usesPerDay', value);
+                handleChange("roomId", Number(val));
               }
             }}
+            className="select-field"
+          >
+            <option value="none">Unassigned</option>
+            {rooms.map((room) => (
+              <option key={room.id} value={room.id}>
+                {room.name} {room.floorLabel ? `(${room.floorLabel})` : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Usage type (read-only text) */}
+        <div className="field-group">
+          <label>Usage Type</label>
+          <div className="usage-type-pill">
+            {isContinuous ? "Continuous" : "Per use"}
+          </div>
+        </div>
+
+        {/* Hours per day */}
+        <div className="field-group">
+          <label>Hours per day</label>
+          <input
+            type="number"
+            min="0"
+            step="0.1"
+            value={appliance.hoursPerDay ?? ""}
+            onChange={(e) =>
+              handleChange(
+                "hoursPerDay",
+                e.target.value === "" ? null : Number(e.target.value)
+              )
+            }
+            className="input-field"
+            disabled={!isContinuous}
           />
         </div>
 
-        {/* Derived values from backend */}
+        {/* Uses per day */}
         <div className="field-group">
-          <label>Estimated Daily kWh</label>
-          <div className="readonly-text">{safeDailyKWh.toFixed(3)}</div>
-        </div>
-
-        <div className="field-group">
-          <label>Estimated Daily Cost (€)</label>
-          <div className="readonly-text">{safeDailyCost.toFixed(2)}</div>
+          <label>Uses per day</label>
+          <input
+            type="number"
+            min="0"
+            step="0.1"
+            value={appliance.usesPerDay ?? ""}
+            onChange={(e) =>
+              handleChange(
+                "usesPerDay",
+                e.target.value === "" ? null : Number(e.target.value)
+              )
+            }
+            className="input-field"
+            disabled={isContinuous}
+          />
         </div>
       </div>
     </div>

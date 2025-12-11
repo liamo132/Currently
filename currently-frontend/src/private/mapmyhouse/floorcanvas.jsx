@@ -39,7 +39,16 @@ export default function FloorCanvas({ floor, onAddRoom, onEditRoom, onDeleteRoom
             <p className="room-type">{room.type}</p>
             <div className="room-footer">
               <span className="room-appliance-count">
-                {room.appliances.length} appliance{room.appliances.length !== 1 ? 's' : ''}
+                {room.appliances && room.appliances.length > 0 && (
+                  <ul className="room-appliance-list">
+                     {room.appliances.map((a) => (
+                   <li key={a.id} className="room-appliance-item">
+                        {a.customName || a.applianceName}
+                    </li>
+           ))}
+  </ul>
+)}
+
               </span>
             </div>
           </div>

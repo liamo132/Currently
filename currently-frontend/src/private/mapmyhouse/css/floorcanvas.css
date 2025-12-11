@@ -125,11 +125,17 @@
   border-top: 1px solid rgba(107, 114, 128, 0.2);
 }
 
-.room-appliance-count {
-  font-size: 0.75rem;
-  color: #6B7280;
-  font-weight: 500;
+.room-appliance-list {
+  margin-top: 0.5rem;
+  padding-left: 1.2rem;
+  font-size: 0.8rem;
+  color: #4b5563;
 }
+
+.room-appliance-item {
+  list-style-type: disc;
+}
+
 
 /* Room Color Variations */
 .room-orange {

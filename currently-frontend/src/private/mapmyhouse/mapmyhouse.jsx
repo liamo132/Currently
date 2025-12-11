@@ -29,6 +29,8 @@ export default function MapMyHouse() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  // NEW: appliances assigned to rooms
+  const [userAppliances, setUserAppliances] = useState([]);
 
   /**
    * Helper: authenticated fetch
@@ -58,90 +60,107 @@ export default function MapMyHouse() {
    * Backend RoomResponse shape: { id, name, floorLabel, type }
    */
 
-  const buildHouseFromRooms = (rooms) => {
-    const initial = getInitialHouseData();
-    const defaultFloorName = initial.floors[0].name; // e.g. "Ground Floor"
+  // Build house structure from rooms + appliances
+const buildHouseFromRooms = (rooms, appliances) => {
+  const initial = getInitialHouseData();
+  const defaultFloorName = initial.floors[0].name; // "Ground Floor"
 
-    //  makes sure when no rooms exist, we return initial structure
-    if (!rooms || rooms.length === 0) {
-      return initial;
-    }
+  // No rooms at all: just return initial structure
+  if (!rooms || rooms.length === 0) {
+    return initial;
+  }
 
-    const floorMap = new Map();
+  const floorMap = new Map();
 
-    rooms.forEach((room) => {
-      const floorLabel = room.floorLabel || defaultFloorName;
-      if (!floorMap.has(floorLabel)) {
-        floorMap.set(floorLabel, {
-          id: floorLabel,      // floor id == label
-          name: floorLabel,
-          order: floorMap.size,
-          rooms: [],
-        });
-      }
-      const floor = floorMap.get(floorLabel);
-      floor.rooms.push({
-        id: room.id,          // backend id
-        name: room.name,
-        type: room.type,
-        appliances: [],
+  rooms.forEach((room) => {
+    const floorLabel = room.floorLabel || defaultFloorName;
+
+    if (!floorMap.has(floorLabel)) {
+      floorMap.set(floorLabel, {
+        id: floorLabel, // floor id == label
+        name: floorLabel,
+        order: floorMap.size,
+        rooms: [],
       });
-    });
-
-    let floors = Array.from(floorMap.values());
-
-    // Ensure default floor is present (even if it has no rooms)
-    if (!floors.some((f) => f.name === defaultFloorName)) {
-      floors = [
-        {
-          id: defaultFloorName,
-          name: defaultFloorName,
-          order: -1,
-          rooms: [],
-        },
-        ...floors,
-      ];
     }
 
-    return {
-      houseName: initial.houseName,
-      floors,
-    };
+    // Attach appliances belonging to this room
+    const roomAppliances = (appliances || []).filter(
+      (a) => a.roomId === room.id
+    );
+
+    const floor = floorMap.get(floorLabel);
+    floor.rooms.push({
+      id: room.id,
+      name: room.name,
+      type: room.type,
+      appliances: roomAppliances, // so .length is real
+    });
+  });
+
+  let floors = Array.from(floorMap.values());
+
+  // Ensure "Ground Floor" exists
+  if (!floors.some((f) => f.name === defaultFloorName)) {
+    floors = [
+      {
+        id: defaultFloorName,
+        name: defaultFloorName,
+        order: -1,
+        rooms: [],
+      },
+      ...floors,
+    ];
+  }
+
+  return {
+    houseName: initial.houseName,
+    floors,
   };
+};
+
 
 
   /**
    * Load rooms from backend on mount.
    */
-  useEffect(() => {
-    const loadRooms = async () => {
-      try {
-        setLoading(true);
-        setError('');
+useEffect(() => {
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError('');
 
-        const res = await fetchWithAuth(`${API_BASE}/api/users/me/rooms`);
-        const data = await res.json(); // List<RoomResponse>
+      // 1) Rooms
+      const roomsRes = await fetchWithAuth(`${API_BASE}/api/users/me/rooms`);
+      const roomsData = await roomsRes.json();
 
-        const newHouse = buildHouseFromRooms(data);
-        setHouse(newHouse);
+      // 2) User appliances
+      const appliancesRes = await fetchWithAuth(
+        `${API_BASE}/api/users/me/appliances`
+      );
+      const appliancesData = await appliancesRes.json();
 
-        if (newHouse.floors.length > 0) {
-          const firstFloorId = newHouse.floors[0].id;
-          setSelectedFloor((prev) =>
-            newHouse.floors.some((f) => f.id === prev) ? prev : firstFloorId
-          );
-          setExpandedFloors([firstFloorId]);
-        }
-      } catch (err) {
-        console.error(err);
-        setError(err.message || 'Failed to load rooms.');
-      } finally {
-        setLoading(false);
+      setUserAppliances(appliancesData);
+
+      // 3) Build house structure with real appliance counts
+      const houseData = buildHouseFromRooms(roomsData, appliancesData);
+      setHouse(houseData);
+
+      if (houseData.floors.length > 0) {
+        setSelectedFloor(houseData.floors[0].id);
+        setExpandedFloors([houseData.floors[0].id]);
       }
-    };
+    } catch (err) {
+      console.error('Failed to load Map My House data:', err.message);
+      setError('Failed to load your house layout.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    loadRooms();
-  }, [API_BASE, fetchWithAuth]);
+  loadData();
+}, [API_BASE, fetchWithAuth]);
+
 
   /**
    * Floor operations (pure frontend; floors are derived from Room.floorLabel).

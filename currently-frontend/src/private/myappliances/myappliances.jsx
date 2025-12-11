@@ -6,6 +6,7 @@
  * Author: Liam Connell
  */
 
+
 import React, { useEffect, useState, useCallback } from "react";
 import HeaderUser from "../../public/components/header-user";
 import ApplianceCard from "./appliancecard";
@@ -16,9 +17,12 @@ export default function MyAppliances() {
 
   const [catalogue, setCatalogue] = useState([]);
   const [userAppliances, setUserAppliances] = useState([]);
+  const [rooms, setRooms] = useState([]);
+
   const [selectedBaseName, setSelectedBaseName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRoomFilter, setSelectedRoomFilter] = useState("");
+  const [selectedRoomFilter, setSelectedRoomFilter] = useState(""); // roomId as string or "" for all
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -37,22 +41,24 @@ export default function MyAppliances() {
     };
 
     const response = await fetch(url, { ...options, headers });
-
     if (!response.ok) {
       const text = await response.text();
       throw new Error(text || `Request failed with status ${response.status}`);
     }
-
     return response;
   }, []);
 
-  // Load catalogue + user appliances
+  const findBaseAppliance = (applianceName) =>
+    catalogue.find((a) => a.name === applianceName);
+
+  // Load catalogue + user appliances + rooms
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
         setError("");
 
+        // 1) Base catalogue (public)
         const catRes = await fetch(`${API_BASE}/api/appliances`);
         if (!catRes.ok) {
           throw new Error("Failed to load base appliances catalogue.");
@@ -64,11 +70,19 @@ export default function MyAppliances() {
           setSelectedBaseName(catData[0].name);
         }
 
+        // 2) User appliances (auth)
         const userRes = await fetchWithAuth(
           `${API_BASE}/api/users/me/appliances`
         );
         const userData = await userRes.json();
         setUserAppliances(userData);
+
+        // 3) Rooms from Map My House
+        const roomsRes = await fetchWithAuth(
+          `${API_BASE}/api/users/me/rooms`
+        );
+        const roomsData = await roomsRes.json();
+        setRooms(roomsData);
       } catch (err) {
         setError(err.message || "An unexpected error occurred while loading.");
       } finally {
@@ -79,29 +93,28 @@ export default function MyAppliances() {
     loadData();
   }, [API_BASE, fetchWithAuth]);
 
-  const findBaseAppliance = (applianceName) =>
-    catalogue.find((a) => a.name === applianceName);
+  // Unique room options from rooms API
+  const roomOptions = rooms.map((r) => ({
+    id: r.id,
+    name: r.name,
+    floorLabel: r.floorLabel,
+  }));
 
-  // Derive room options from catalogue categories (for "Search by room")
-  const roomOptions = Array.from(
-    new Set(catalogue.map((a) => a.category))
-  ).sort();
-
-  // Apply search + room filter
+  // Filter by search + room
   const filteredAppliances = userAppliances.filter((ua) => {
     const label = (ua.customName || ua.applianceName || "").toLowerCase();
     const matchesSearch = label.includes(searchTerm.toLowerCase());
 
-    const base = findBaseAppliance(ua.applianceName);
-    const baseCategory = base ? base.category : "";
+    const roomId = ua.roomId || null;
+    const filterRoomId = selectedRoomFilter ? Number(selectedRoomFilter) : null;
 
     const matchesRoom =
-      !selectedRoomFilter || baseCategory === selectedRoomFilter;
+      !filterRoomId || (roomId !== null && roomId === filterRoomId);
 
     return matchesSearch && matchesRoom;
   });
 
-  // Add appliance from catalogue
+  // Add new appliance from catalogue (initially unassigned to any room)
   const handleAddAppliance = async () => {
     if (!selectedBaseName) {
       alert("Please select an appliance from the list.");
@@ -120,11 +133,12 @@ export default function MyAppliances() {
       const payload = {
         applianceName: base.name,
         customName: base.name,
-        usageType: base.usageType,
+        usageType: base.usageType, // "continuous" or "perUse"
         hoursPerDay:
           base.usageType === "continuous" ? base.defaultHoursPerDay || 1 : null,
         usesPerDay:
           base.usageType === "perUse" ? base.defaultUsesPerDay || 1 : null,
+        roomId: null, // user will assign room later
       };
 
       const res = await fetchWithAuth(
@@ -147,6 +161,7 @@ export default function MyAppliances() {
     setIsAddModalOpen(false);
   };
 
+  // Update appliance (usage, name, room)
   const handleUpdateAppliance = async (id, updatedFields) => {
     const existing = userAppliances.find((ua) => ua.id === id);
     if (!existing) return;
@@ -169,6 +184,10 @@ export default function MyAppliances() {
           updatedFields.usesPerDay !== undefined
             ? updatedFields.usesPerDay
             : existing.usesPerDay,
+        roomId:
+          updatedFields.roomId !== undefined
+            ? updatedFields.roomId
+            : existing.roomId ?? null,
       };
 
       const res = await fetchWithAuth(
@@ -188,33 +207,23 @@ export default function MyAppliances() {
     }
   };
 
+  // Delete appliance
   const handleRemoveAppliance = async (id) => {
     if (!window.confirm("Remove this appliance?")) return;
 
     try {
       setError("");
 
-      await fetchWithAuth(`${API_BASE}/api/users/me/appliances/${id}`, {
-        method: "DELETE",
-      });
+      await fetchWithAuth(
+        `${API_BASE}/api/users/me/appliances/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       setUserAppliances((current) => current.filter((ua) => ua.id !== id));
     } catch (err) {
       setError(err.message || "Failed to remove appliance.");
-    }
-  };
-
-  const handleSaveAll = async () => {
-    try {
-      setError("");
-      const res = await fetchWithAuth(
-        `${API_BASE}/api/users/me/appliances`
-      );
-      const userData = await res.json();
-      setUserAppliances(userData);
-      alert("Appliances refreshed from server.");
-    } catch (err) {
-      setError(err.message || "Failed to refresh appliances.");
     }
   };
 
@@ -237,9 +246,13 @@ export default function MyAppliances() {
       <div className="myappliances-content">
         <h1 className="myappliances-title">My Appliances</h1>
 
-        {error && <div className="myappliances-error">{error}</div>}
+        {error && (
+          <div className="myappliances-error">
+            {error}
+          </div>
+        )}
 
-        {/* Search + room filter row */}
+        {/* Search + room filter */}
         <div className="filter-row">
           <div className="search-bar">
             <input
@@ -258,9 +271,10 @@ export default function MyAppliances() {
               onChange={(e) => setSelectedRoomFilter(e.target.value)}
             >
               <option value="">All rooms</option>
+              <option value="none">Unassigned</option>
               {roomOptions.map((room) => (
-                <option key={room} value={room}>
-                  {room}
+                <option key={room.id} value={room.id}>
+                  {room.name} {room.floorLabel ? `(${room.floorLabel})` : ""}
                 </option>
               ))}
             </select>
@@ -275,6 +289,7 @@ export default function MyAppliances() {
                 key={appliance.id}
                 appliance={appliance}
                 baseAppliance={findBaseAppliance(appliance.applianceName)}
+                rooms={roomOptions}
                 onUpdate={handleUpdateAppliance}
                 onRemove={handleRemoveAppliance}
               />
@@ -282,14 +297,14 @@ export default function MyAppliances() {
 
             {filteredAppliances.length === 0 && (
               <p className="empty-state">
-                No appliances found. Adjust your search or room filter, or click
+                No appliances found. Adjust your search/room filter or click
                 “+ Add Appliance”.
               </p>
             )}
           </div>
         </div>
 
-        {/* Single action button under the grey box */}
+        {/* Action button under the grey box */}
         <div className="actions">
           <button
             className="add-btn"
@@ -326,9 +341,7 @@ export default function MyAppliances() {
                   if (!base) return null;
                   return (
                     <>
-                      <div>
-                        <strong>Category:</strong> {base.category}
-                      </div>
+                      <div><strong>Category:</strong> {base.category}</div>
                       <div>
                         <strong>Usage type:</strong>{" "}
                         {base.usageType === "continuous"
