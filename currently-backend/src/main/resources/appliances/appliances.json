@@ -1,0 +1,142 @@
+[
+  {
+    "name": "Fridge",
+    "category": "Kitchen",
+    "usageType": "continuous",
+    "averageWatts": 150,
+    "defaultHoursPerDay": 24
+  },
+  {
+    "name": "Freezer",
+    "category": "Kitchen",
+    "usageType": "continuous",
+    "averageWatts": 100,
+    "defaultHoursPerDay": 24
+  },
+  {
+    "name": "Electric Kettle",
+    "category": "Kitchen",
+    "usageType": "perUse",
+    "averageWattsPerUse": 2000,
+    "defaultUsesPerDay": 3
+  },
+  {
+    "name": "Electric Oven",
+    "category": "Kitchen",
+    "usageType": "perUse",
+    "averageWattsPerUse": 2500,
+    "defaultUsesPerDay": 1
+  },
+  {
+    "name": "Microwave",
+    "category": "Kitchen",
+    "usageType": "perUse",
+    "averageWattsPerUse": 800,
+    "defaultUsesPerDay": 2
+  },
+  {
+    "name": "Toaster",
+    "category": "Kitchen",
+    "usageType": "perUse",
+    "averageWattsPerUse": 1500,
+    "defaultUsesPerDay": 1
+  },
+  {
+    "name": "Dishwasher",
+    "category": "Kitchen",
+    "usageType": "perUse",
+    "averageWattsPerUse": 2200,
+    "defaultUsesPerDay": 1
+  },
+  {
+    "name": "Television",
+    "category": "Living Room",
+    "usageType": "continuous",
+    "averageWatts": 100,
+    "defaultHoursPerDay": 4
+  },
+  {
+    "name": "Desktop Computer",
+    "category": "Living Room",
+    "usageType": "continuous",
+    "averageWatts": 200,
+    "defaultHoursPerDay": 4
+  },
+  {
+    "name": "Laptop",
+    "category": "Living Room",
+    "usageType": "continuous",
+    "averageWatts": 70,
+    "defaultHoursPerDay": 6
+  },
+  {
+    "name": "WiFi Router",
+    "category": "Living Room",
+    "usageType": "continuous",
+    "averageWatts": 10,
+    "defaultHoursPerDay": 24
+  },
+  {
+    "name": "LED Lamp",
+    "category": "Bedroom",
+    "usageType": "continuous",
+    "averageWatts": 10,
+    "defaultHoursPerDay": 5
+  },
+  {
+    "name": "Incandescent Lamp",
+    "category": "Bedroom",
+    "usageType": "continuous",
+    "averageWatts": 60,
+    "defaultHoursPerDay": 3
+  },
+  {
+    "name": "Electric Blanket",
+    "category": "Bedroom",
+    "usageType": "continuous",
+    "averageWatts": 150,
+    "defaultHoursPerDay": 8
+  },
+  {
+    "name": "Hair Dryer",
+    "category": "Bedroom",
+    "usageType": "perUse",
+    "averageWattsPerUse": 2000,
+    "defaultUsesPerDay": 1
+  },
+  {
+    "name": "Electric Shower",
+    "category": "Bathroom",
+    "usageType": "perUse",
+    "averageWattsPerUse": 9500,
+    "defaultUsesPerDay": 1
+  },
+  {
+    "name": "Immersion Heater",
+    "category": "Bathroom",
+    "usageType": "perUse",
+    "averageWattsPerUse": 3000,
+    "defaultUsesPerDay": 1
+  },
+  {
+    "name": "Washing Machine",
+    "category": "Utility",
+    "usageType": "perUse",
+    "averageWattsPerUse": 1000,
+    "defaultUsesPerDay": 1
+  },
+  {
+    "name": "Tumble Dryer",
+    "category": "Utility",
+    "usageType": "perUse",
+    "averageWattsPerUse": 2800,
+    "defaultUsesPerDay": 1
+  },
+  {
+    "name": "Vacuum Cleaner",
+    "category": "Household",
+    "usageType": "perUse",
+    "averageWattsPerUse": 700,
+    "defaultUsesPerDay": 1
+  }
+]
