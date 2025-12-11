@@ -1,0 +1,204 @@
+
+.floorcanvas-container {
+  background-color: var(--color-white);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.floorcanvas-header {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.floorcanvas-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.floorcanvas-add-btn {
+  background-color: var(--color-accent);
+  color: var(--color-white);
+  padding: 0.625rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.floorcanvas-add-btn:hover {
+  background-color: #059669;
+}
+
+/* Room Grid */
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+  min-height: 400px;
+}
+
+/* Room Cards */
+.room-card {
+  border: 2px solid;
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.2s;
+}
+
+.room-card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.room-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.room-icon {
+  font-size: 2.5rem;
+}
+
+.room-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.room-edit-btn,
+.room-delete-btn {
+  padding: 0.375rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.room-edit-btn {
+  color: #3B82F6;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.room-edit-btn:hover {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.room-delete-btn {
+  color: #EF4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.room-delete-btn:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+
+.room-name {
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+}
+
+.room-type {
+  font-size: 0.75rem;
+  color: #6B7280;
+  margin: 0;
+}
+
+.room-footer {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.room-appliance-count {
+  font-size: 0.75rem;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+/* Room Color Variations */
+.room-orange {
+  background-color: #FFF7ED;
+  border-color: #FED7AA;
+}
+
+.room-blue {
+  background-color: #EFF6FF;
+  border-color: #BFDBFE;
+}
+
+.room-emerald {
+  background-color: #ECFDF5;
+  border-color: #A7F3D0;
+}
+
+.room-cyan {
+  background-color: #ECFEFF;
+  border-color: #A5F3FC;
+}
+
+.room-purple {
+  background-color: #F5F3FF;
+  border-color: #DDD6FE;
+}
+
+.room-gray {
+  background-color: #F9FAFB;
+  border-color: #E5E7EB;
+}
+
+.room-pink {
+  background-color: #FDF2F8;
+  border-color: #FBCFE8;
+}
+
+.room-yellow {
+  background-color: #FEFCE8;
+  border-color: #FEF08A;
+}
+
+/* Empty State */
+.room-empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  border: 2px dashed #D1D5DB;
+  border-radius: 12px;
+  color: #9CA3AF;
+}
+
+.empty-icon {
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.5;
+}
+
+.empty-text {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* Icons */
+.icon-sm {
+  width: 1rem;
+  height: 1rem;
+}

@@ -57,18 +57,23 @@ export default function MapMyHouse() {
    * Helper: build house state (floors + rooms) from backend rooms.
    * Backend RoomResponse shape: { id, name, floorLabel, type }
    */
+
   const buildHouseFromRooms = (rooms) => {
+    const initial = getInitialHouseData();
+    const defaultFloorName = initial.floors[0].name; // e.g. "Ground Floor"
+
+    //  makes sure when no rooms exist, we return initial structure
     if (!rooms || rooms.length === 0) {
-      return getInitialHouseData();
+      return initial;
     }
 
     const floorMap = new Map();
 
     rooms.forEach((room) => {
-      const floorLabel = room.floorLabel || 'Floor';
+      const floorLabel = room.floorLabel || defaultFloorName;
       if (!floorMap.has(floorLabel)) {
         floorMap.set(floorLabel, {
-          id: floorLabel,      // use floorLabel as stable id
+          id: floorLabel,      // floor id == label
           name: floorLabel,
           order: floorMap.size,
           rooms: [],
@@ -76,18 +81,34 @@ export default function MapMyHouse() {
       }
       const floor = floorMap.get(floorLabel);
       floor.rooms.push({
-        id: room.id,          // backend room id
+        id: room.id,          // backend id
         name: room.name,
         type: room.type,
-        appliances: [],       // will be linked later from MyAppliances
+        appliances: [],
       });
     });
 
+    let floors = Array.from(floorMap.values());
+
+    // Ensure default floor is present (even if it has no rooms)
+    if (!floors.some((f) => f.name === defaultFloorName)) {
+      floors = [
+        {
+          id: defaultFloorName,
+          name: defaultFloorName,
+          order: -1,
+          rooms: [],
+        },
+        ...floors,
+      ];
+    }
+
     return {
-      houseName: 'My Home',
-      floors: Array.from(floorMap.values()),
+      houseName: initial.houseName,
+      floors,
     };
   };
+
 
   /**
    * Load rooms from backend on mount.
@@ -127,12 +148,27 @@ export default function MapMyHouse() {
    * Note: empty floors will only exist in frontend until a room is added.
    */
 
-  const addFloor = () => {
-    const newFloorNumber = house.floors.length + 1;
-    const newFloorName = `Floor ${newFloorNumber}`;
+    const addFloor = () => {
+    const MAX_FLOORS = 3;
+
+    // Enforce maximum floors
+    if (house.floors.length >= MAX_FLOORS) {
+      alert('You can only have up to 3 floors.');
+      return;
+    }
+
+    // Make sure new floor name is unique
+    const existingNames = new Set(house.floors.map((f) => f.name));
+    let n = house.floors.length + 1;
+    let newFloorName;
+
+    do {
+      newFloorName = `Floor ${n}`;
+      n++;
+    } while (existingNames.has(newFloorName));
 
     const newFloor = {
-      id: newFloorName,      // keep id == name (used as floorLabel)
+      id: newFloorName,   // id == name
       name: newFloorName,
       order: house.floors.length,
       rooms: [],
@@ -142,31 +178,43 @@ export default function MapMyHouse() {
     setHouse({ ...house, floors: updatedFloors });
     setSelectedFloor(newFloor.id);
     setExpandedFloors([...expandedFloors, newFloor.id]);
-    // Backend will persist this floor label once first room is created on it.
   };
 
-  const deleteFloor = (floorId) => {
+
+    const deleteFloor = (floorId) => {
+    const initial = getInitialHouseData();
+    const defaultFloorName = initial.floors[0].name; // e.g. "Ground Floor"
+
     const currentFloor = house.floors.find((f) => f.id === floorId);
     if (!currentFloor) return;
 
+    // Ground floor should never be deletable
+    if (currentFloor.name === defaultFloorName) {
+      alert('You cannot delete the Ground Floor.');
+      return;
+    }
+
+    // Also prevent deleting the last remaining floor (safety)
     if (house.floors.length === 1) {
-      alert('You must have at least one floor!');
+      alert('You must have at least one floor.');
       return;
     }
 
     if (currentFloor.rooms.length > 0) {
-      alert('To keep backend consistent, delete rooms on this floor first.');
+      alert('Delete the rooms on this floor before deleting the floor.');
       return;
     }
 
     if (window.confirm('Delete this floor?')) {
       const updatedFloors = house.floors.filter((f) => f.id !== floorId);
       setHouse({ ...house, floors: updatedFloors });
+
       if (selectedFloor === floorId && updatedFloors.length > 0) {
         setSelectedFloor(updatedFloors[0].id);
       }
     }
   };
+
 
   const toggleFloor = (floorId) => {
     setExpandedFloors((prev) =>

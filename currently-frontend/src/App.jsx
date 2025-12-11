@@ -14,6 +14,8 @@ import Login from "./public/pages/auth/Login.jsx";
 import Signup from "./public/pages/auth/Signup.jsx";
 import Dashboard from "./private/Dashboard.jsx";
 import MyAppliances from "./private/myappliances/myappliances.jsx";
+import MapMyHouse from "./private/mapmyhouse/mapmyhouse.jsx";
+
 
 /**
  * Component: PublicLayout
@@ -78,6 +80,16 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
+        <Route
+  path="/mapmyhouse"
+  element={
+    <PrivateRoute>
+      <MapMyHouse />
+    </PrivateRoute>
+  }
+/>
+
 
         {/* Fallback for unknown paths */}
         <Route path="*" element={<Navigate to="/" replace />} />
