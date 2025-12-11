@@ -1,0 +1,92 @@
+
+
+.user-header {
+  background-color: var(--color-white);
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.user-nav {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+  padding: 0 50px;
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: 750;
+  color: #10B981;
+}
+
+.user-nav ul {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+}
+
+.user-nav ul li {
+  list-style: none;
+}
+
+.user-nav ul a {
+  color: var(--color-text);
+  font-size: 1rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.user-nav ul a:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+/* Active link styling */
+.user-nav ul a.active {
+  color: var(--color-accent);
+  font-weight: 700;
+  border-bottom: 2px solid var(--color-accent);
+  padding-bottom: 0.25rem;
+}
+
+
+.logout-link {
+  background-color: #10B981;
+  border: none;
+  padding: 3px;
+  font-size: 1rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  color: #E5E7EB; 
+  cursor: pointer;
+  transition: color 0.2s ease;
+  margin-left: 1rem;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.logout-link:hover {
+  color: #10a573; 
+  text-decoration: underline;
+}
+
+.logout-link:focus {
+  outline: 3px solid rgba(236, 234, 234, 0.25); 
+  outline-offset: 4px;
+}
+
+
+@media (max-width: 768px) {
+  .user-nav {
+    padding: 0 20px;
+  }
+
+  .user-nav ul {
+    display: none; /* you can revisit for mobile nav later */
+  }
+}

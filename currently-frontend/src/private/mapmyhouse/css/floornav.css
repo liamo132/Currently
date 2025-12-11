@@ -1,0 +1,228 @@
+/* pages/mapmyhouse/css/floornav.css */
+@import "../../../assets/variables.css";
+
+.floornav-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Floor Panel */
+.floornav-panel {
+  background-color: var(--color-white);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.floornav-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.floornav-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.floornav-badge {
+  font-size: 0.75rem;
+  background-color: var(--color-accent);
+  color: var(--color-white);
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.floornav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Floor Item */
+.floor-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.floor-item-header {
+  padding: 0.75rem;
+  cursor: pointer;
+  background-color: var(--color-white);
+  border-left: 4px solid transparent;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.floor-item-header:hover {
+  background-color: #F9FAFB;
+}
+
+.floor-item-header.active {
+  background-color: #D1FAE5;
+  border-left-color: var(--color-accent);
+}
+
+.floor-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.floor-toggle-btn,
+.floor-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  color: #6B7280;
+  transition: color 0.2s;
+}
+
+.floor-toggle-btn:hover {
+  color: var(--color-text);
+}
+
+.floor-delete-btn {
+  color: #EF4444;
+  padding: 0.25rem;
+}
+
+.floor-delete-btn:hover {
+  color: #DC2626;
+}
+
+.floor-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+.floor-count {
+  font-size: 0.75rem;
+  color: #6B7280;
+}
+
+.floor-rooms-list {
+  background-color: #F9FAFB;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.floor-room-item {
+  font-size: 0.75rem;
+  color: #6B7280;
+  padding-left: 1.5rem;
+}
+
+.floornav-add-btn {
+  width: 100%;
+  margin-top: 1rem;
+  background-color: var(--color-accent);
+  color: var(--color-white);
+  padding: 0.625rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.floornav-add-btn:hover {
+  background-color: #059669;
+}
+
+/* Stats Panel */
+.floornav-stats {
+  background-color: var(--color-white);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.stats-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 1rem 0;
+}
+
+.stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-icon-green {
+  background-color: #D1FAE5;
+  color: var(--color-accent);
+}
+
+.stat-icon-blue {
+  background-color: #DBEAFE;
+  color: #3B82F6;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6B7280;
+  margin-top: 0.125rem;
+}
+
+/* Icons */
+.icon-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+.icon-md {
+  width: 1.25rem;
+  height: 1.25rem;
+}
