@@ -21,6 +21,11 @@ public class UserApplianceResponse {
     private String usageType;
     private Double hoursPerDay;
     private Double usesPerDay;
+    private Long roomId;
+    private String roomName;
+
+
+
 
     // Derived metrics (calculated in service)
     private Double dailyKWh;
@@ -89,4 +94,21 @@ public class UserApplianceResponse {
     public void setEstimatedDailyCost(Double estimatedDailyCost) {
         this.estimatedDailyCost = estimatedDailyCost;
     }
+
+    public Long getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(Long roomId) {
+        this.roomId = roomId;
+    }
+
+    public String getRoomName() {
+        return roomName;
+    }
+
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
+    }
+
 }

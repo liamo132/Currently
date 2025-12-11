@@ -7,6 +7,9 @@
  */
 
 package com.currently.currently_backend.service;
+import com.currently.currently_backend.model.Room;
+import com.currently.currently_backend.repository.RoomRepository;
+
 
 import com.currently.currently_backend.dto.UserApplianceRequest;
 import com.currently.currently_backend.dto.UserApplianceResponse;
@@ -17,7 +20,9 @@ import com.currently.currently_backend.repository.UserApplianceRepository;
 import com.currently.currently_backend.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -32,20 +37,28 @@ import java.util.stream.Collectors;
 @Service
 public class UserApplianceService {
 
+
     // Example tariff: €0.30 per kWh (you can move this to config later)
     private static final double PRICE_PER_KWH = 0.30;
 
     private final UserRepository userRepository;
     private final UserApplianceRepository userApplianceRepository;
     private final ApplianceService applianceService;
+    private final RoomRepository roomRepository;
 
-    public UserApplianceService(UserRepository userRepository,
-                                UserApplianceRepository userApplianceRepository,
-                                ApplianceService applianceService) {
+
+    public UserApplianceService(
+            UserRepository userRepository,
+            UserApplianceRepository userApplianceRepository,
+            ApplianceService applianceService,
+            RoomRepository roomRepository
+    ) {
         this.userRepository = userRepository;
         this.userApplianceRepository = userApplianceRepository;
         this.applianceService = applianceService;
+        this.roomRepository = roomRepository;
     }
+
 
     // Function: getCurrentUser
     // Purpose: Retrieve the currently authenticated user using Spring Security's context.
@@ -81,29 +94,41 @@ public class UserApplianceService {
     public UserApplianceResponse createUserAppliance(UserApplianceRequest request) {
         User user = getCurrentUser();
 
-        // Validate that the appliance exists in the catalogue
         Appliance baseAppliance = findBaseApplianceOrThrow(request.getApplianceName());
 
-        // Validate usageType matches the base appliance (defensive check)
         if (!baseAppliance.getUsageType().equalsIgnoreCase(request.getUsageType())) {
             throw new IllegalArgumentException("Usage type does not match base appliance configuration.");
         }
 
-        // Basic validation to ensure appropriate usage fields are set
         validateUsageFields(request);
 
-        UserAppliance entity = new UserAppliance(
-                user,
-                request.getApplianceName(),
-                request.getCustomName(),
-                request.getUsageType(),
-                request.getHoursPerDay(),
-                request.getUsesPerDay()
-        );
+        UserAppliance entity = new UserAppliance();
+        entity.setUser(user);
+        entity.setApplianceName(request.getApplianceName());
+        entity.setCustomName(request.getCustomName());
+        entity.setUsageType(request.getUsageType());
+        entity.setHoursPerDay(request.getHoursPerDay());
+        entity.setUsesPerDay(request.getUsesPerDay());
+
+// ROOM ASSIGNMENT (POST)
+        Room room = null;
+        if (request.getRoomId() != null) {
+            room = roomRepository.findById(request.getRoomId())
+                    .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+            if (!room.getUser().getId().equals(user.getId())) {
+                throw new IllegalStateException("Cannot assign appliance to another user's room.");
+            }
+        }
+        entity.setRoom(room);
+
+        entity.setCreatedAt(LocalDateTime.now());
 
         UserAppliance saved = userApplianceRepository.save(entity);
         return mapToResponseWithDerivedValues(saved);
+
     }
+
 
     // Function: updateUserAppliance
     // Purpose: Update an existing UserAppliance's usage values and custom name.
@@ -134,10 +159,29 @@ public class UserApplianceService {
             entity.setUsesPerDay(request.getUsesPerDay());
         }
 
+        // ROOM ASSIGNMENT (PUT)
+        if (request.getRoomId() != null) {
+            Room room = roomRepository.findById(request.getRoomId())
+                    .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+            if (!room.getUser().getId().equals(user.getId())) {
+                throw new IllegalStateException("Cannot assign appliance to another user's room.");
+            }
+
+            entity.setRoom(room);
+        } else {
+            // Allow unassigning room if request explicitly sets roomId: null
+            entity.setRoom(null);
+        }
+
+
         validateUsageFieldsForEntity(entity);
+
+        entity.setUpdatedAt(LocalDateTime.now());
 
         UserAppliance updated = userApplianceRepository.save(entity);
         return mapToResponseWithDerivedValues(updated);
+
     }
 
     // Function: deleteUserAppliance
@@ -201,7 +245,6 @@ public class UserApplianceService {
         }
     }
 
-    // Helper: map from entity to response and compute derived values
     private UserApplianceResponse mapToResponseWithDerivedValues(UserAppliance entity) {
         UserApplianceResponse response = new UserApplianceResponse();
         response.setId(entity.getId());
@@ -217,8 +260,17 @@ public class UserApplianceService {
         response.setDailyKWh(dailyKWh);
         response.setEstimatedDailyCost(dailyKWh * PRICE_PER_KWH);
 
+        // ROOM MAPPING
+        Room room = entity.getRoom();
+        if (room != null) {
+            response.setRoomId(room.getId());
+            response.setRoomName(room.getName());
+        }
+
         return response;
     }
+
+
 
     // Helper: core energy calculation logic
     private double calculateDailyKWh(UserAppliance entity, Appliance baseAppliance) {

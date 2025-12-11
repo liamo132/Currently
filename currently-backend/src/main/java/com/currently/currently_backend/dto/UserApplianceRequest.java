@@ -29,6 +29,10 @@ public class UserApplianceRequest {
     // For per-use devices
     private Double usesPerDay;
 
+    //for using custom rooms
+    private Long roomId;
+
+
     public String getApplianceName() {
         return applianceName;
     }
@@ -68,4 +72,13 @@ public class UserApplianceRequest {
     public void setUsesPerDay(Double usesPerDay) {
         this.usesPerDay = usesPerDay;
     }
+
+    public Long getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(Long roomId) {
+        this.roomId = roomId;
+    }
+
 }

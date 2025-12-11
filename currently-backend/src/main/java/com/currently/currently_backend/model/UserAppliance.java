@@ -29,6 +29,11 @@ public class UserAppliance {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    // Optional link to a room (Map My House)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id")
+    private Room room;
+
     // We reference the base appliance by name as a key into appliances.json
     @Column(name = "appliance_name", nullable = false)
     private String applianceName;
@@ -37,7 +42,7 @@ public class UserAppliance {
     @Column(name = "custom_name")
     private String customName;
 
-    // Either "continuous" or "perUse" – must match your appliances.json usageType values
+    // Either "continuous" or "perUse" – must match appliances.json usageType
     @Column(name = "usage_type", nullable = false)
     private String usageType;
 
@@ -71,11 +76,28 @@ public class UserAppliance {
         this.usageType = usageType;
         this.hoursPerDay = hoursPerDay;
         this.usesPerDay = usesPerDay;
-        this.createdAt = LocalDateTime.now();
+        // Timestamps will be filled by @PrePersist
+    }
+
+    // Lifecycle callbacks for timestamps
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        if (this.createdAt == null) {
+            this.createdAt = now;
+        }
+        if (this.updatedAt == null) {
+            this.updatedAt = now;
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 
     // Getters and setters
+
     public Long getId() {
         return id;
     }
@@ -144,9 +166,11 @@ public class UserAppliance {
         this.updatedAt = updatedAt;
     }
 
-    // Convenience method to update timestamps on change
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    public Room getRoom() {
+        return room;
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
     }
 }
