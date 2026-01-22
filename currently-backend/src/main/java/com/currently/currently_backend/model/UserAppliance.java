@@ -15,6 +15,10 @@ import java.time.LocalDateTime;
  * Entity: UserAppliance
  * Purpose: Link a User to a selected appliance from the base catalogue and
  *          store user-specific usage data to support energy estimation.
+ * 
+ * ref. SEAI Typical Appliance Energy Usage
+ * Manufacturer specifications avg across 3 models where available
+ * Energy Saving Trust (UK – widely accepted academically)
  */
 @Entity
 @Table(name = "user_appliances")
@@ -29,7 +33,7 @@ public class UserAppliance {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Optional link to a room (Map My House)
+    //  link to a room (Map My House)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
     private Room room;

@@ -211,23 +211,23 @@
   padding: 0.55rem 1.1rem;
   border-radius: 0.5rem;
   border: 1px solid #D1D5DB;
-  background-color: #F9FAFB;
+  background-color: hsl(0, 77%, 58%);
   cursor: pointer;
   font-size: 0.9rem;
 }
 
 .modal-btn.primary {
   border-color: var(--color-accent);
-  background-color: var(--color-accent);
+  background-color: red;
   color: #ffffff;
 }
 
 .modal-btn.primary:hover {
-  background-color: #059669;
+  background-color: red;
 }
 
 .modal-btn:hover {
-  background-color: #E5E7EB;
+  background-color: red;
 }
 
 @media (max-width: 768px) {
