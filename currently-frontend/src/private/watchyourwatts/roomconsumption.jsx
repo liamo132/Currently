@@ -1,0 +1,93 @@
+// watchyourwatts/roomconsumption.jsx
+import React, { useMemo } from 'react';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { Zap } from 'lucide-react';
+import './css/roomconsumption.css';
+
+const RoomConsumption = ({ rooms, appliances }) => {
+  const data = useMemo(() => {
+    const byRoom = new Map();
+
+    // Seed with real rooms
+    rooms.forEach((r) => byRoom.set(r.id, { name: r.name, value: 0 }));
+
+    // Add an "Unassigned" bucket
+    const UNASSIGNED_KEY = '__unassigned__';
+    byRoom.set(UNASSIGNED_KEY, { name: 'Unassigned', value: 0 });
+
+    (appliances || []).forEach((a) => {
+      const kwh = Number(a.dailyKWh || 0);
+      const key = a.roomId ?? UNASSIGNED_KEY;
+
+      if (!byRoom.has(key)) {
+        // fallback in case a room exists in appliances but not loaded
+        byRoom.set(key, { name: 'Unknown Room', value: 0 });
+      }
+
+      byRoom.get(key).value += kwh;
+    });
+
+    const rows = Array.from(byRoom.values())
+      .filter((x) => x.value > 0)
+      .sort((a, b) => b.value - a.value);
+
+    const total = rows.reduce((sum, r) => sum + r.value, 0);
+
+    return rows.map((r) => ({
+      ...r,
+      percentage: total > 0 ? Math.round((r.value / total) * 100) : 0,
+    }));
+  }, [rooms, appliances]);
+
+  // simple rotating colors (no hard-coded scheme tied to room names)
+  const COLORS = ['#F97316', '#3B82F6', '#8B5CF6', '#06B6D4', '#10B981', '#6B7280', '#EF4444'];
+
+  return (
+    <div className="room-consumption-card">
+      <h2 className="room-consumption-title">
+        <Zap size={24} className="title-icon" />
+        Consumption by Room
+      </h2>
+
+      <div className="chart-container">
+        {data.length === 0 ? (
+          <p style={{ padding: '1rem' }}>No consumption data yet. Assign appliances to rooms to see breakdown.</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percentage }) => `${name} ${percentage}%`}
+                outerRadius={100}
+                dataKey="value"
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(value) => `${Number(value).toFixed(2)} kWh/day`} />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      {data.length > 0 && (
+        <div className="room-legend">
+          {data.map((room, idx) => (
+            <div key={room.name} className="legend-item">
+              <div className="legend-color" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></div>
+              <span className="legend-text">
+                {room.name}: {room.value.toFixed(2)} kWh/day
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default RoomConsumption;
