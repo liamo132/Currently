@@ -1,0 +1,63 @@
+/* watchyourwatts/css/watchyourwatts.css */
+
+.watchyourwatts-container {
+  min-height: 100vh;
+}
+
+.watchyourwatts-content {
+  padding: 4.5rem;
+  max-width: 1400px;
+  margin-top: 50px;
+  min-height: 60vh;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: var(--color-offwhite);
+  border-radius: 12px;
+  position: relative;
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  border: 5px solid transparent;
+  transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms ease;
+}
+
+.watchyourwatts-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.5px;
+}
+
+.watchyourwatts-subtitle {
+  font-size: 1rem;
+  color: #6B7280;
+  margin: 0 0 2rem 0;
+  font-weight: 400;
+}
+
+.watchyourwatts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .watchyourwatts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .watchyourwatts-content {
+    padding: 1rem;
+  }
+  .watchyourwatts-title {
+    font-size: 1.875rem;
+    margin-bottom: 1rem;
+  }
+  .watchyourwatts-subtitle {
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+  }
+}

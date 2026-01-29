@@ -1,0 +1,98 @@
+.cost-forecast-card {
+  background-color: var(--color-white);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms ease;
+}
+
+.cost-forecast-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cost-forecast-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 1.5rem 0;
+  display: flex;
+  align-items: center;
+}
+
+.savings-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.savings-card {
+  background-color: #F9FAFB;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.savings-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.savings-card.highlight {
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 2px solid var(--color-accent);
+}
+
+.savings-label {
+  font-size: 0.875rem;
+  color: #6B7280;
+  margin: 0 0 0.5rem 0;
+  font-weight: 500;
+}
+
+.savings-amount {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.savings-amount.current {
+  color: #EF4444;
+}
+
+.savings-amount.optimized {
+  color: #F59E0B;
+}
+
+.savings-amount.savings {
+  color: var(--color-accent);
+}
+
+.savings-percentage {
+  font-size: 0.875rem;
+  color: var(--color-accent);
+  margin: 0.5rem 0 0 0;
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+  .savings-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .room-legend {
+    grid-template-columns: 1fr;
+  }
+  .appliance-row {
+    flex-wrap: wrap;
+  }
+  .reduce-btn {
+    width: 100%;
+    margin-top: 1rem;
+  }
+}

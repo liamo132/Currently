@@ -1,0 +1,76 @@
+/* watchyourwatts/css/watchtabs.css */
+/* watchtabs.css */
+
+.watchtabs-controls { flex-wrap: wrap; }
+.watchtabs-wrap {
+  position: relative;
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.35rem;
+  border-radius: 999px;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  overflow: hidden;
+}
+
+.watchtabs-indicator {
+  position: absolute;
+  top: 0.35rem;
+  bottom: 0.35rem;
+  left: 0;
+  border-radius: 999px;
+  background: var(--color-white);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+  transition: transform 180ms ease, width 180ms ease;
+  z-index: 0;
+}
+
+.watchtabs-btn {
+  position: relative;
+  z-index: 1;
+  border: none;
+  background: transparent;
+  padding: 0.65rem 1.1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 650;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  transition: color 160ms ease;
+  white-space: nowrap;
+}
+
+.watchtabs-btn:hover {
+  color: var(--color-accent);
+}
+
+.watchtabs-btn.active {
+  color: var(--color-text);
+}
+
+.watchtabs-controls {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.watchtabs-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.watchtabs-input {
+  width: 90px;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  background: var(--color-white);
+}
+
+.watchtabs-input--wide {
+  width: 140px;
+}

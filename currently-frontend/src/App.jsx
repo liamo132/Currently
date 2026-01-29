@@ -15,6 +15,7 @@ import Signup from "./public/pages/auth/Signup.jsx";
 import Dashboard from "./private/Dashboard.jsx";
 import MyAppliances from "./private/myappliances/myappliances.jsx";
 import MapMyHouse from "./private/mapmyhouse/mapmyhouse.jsx";
+import WatchYourWatts from "./private/watchyourwatts/watchyourwatts.jsx";
 
 
 /**
@@ -89,6 +90,16 @@ export default function App() {
     </PrivateRoute>
   }
 />
+
+<Route
+  path="/watchyourwatts"
+  element={
+    <PrivateRoute>
+      <WatchYourWatts />
+    </PrivateRoute>
+  }
+/>
+
 
 
         {/* Fallback for unknown paths */}

@@ -6,28 +6,26 @@ import './css/roomconsumption.css';
 
 const RoomConsumption = ({ rooms, appliances }) => {
   const data = useMemo(() => {
-    const byRoom = new Map();
+    const byRoomName = new Map();
 
-    // Seed with real rooms
-    rooms.forEach((r) => byRoom.set(r.id, { name: r.name, value: 0 }));
+    // Seed room buckets by room name
+    (rooms || []).forEach((r) => byRoomName.set(r.id, { name: r.name, value: 0 }));
 
-    // Add an "Unassigned" bucket
     const UNASSIGNED_KEY = '__unassigned__';
-    byRoom.set(UNASSIGNED_KEY, { name: 'Unassigned', value: 0 });
+    byRoomName.set(UNASSIGNED_KEY, { name: 'Unassigned', value: 0 });
 
     (appliances || []).forEach((a) => {
       const kwh = Number(a.dailyKWh || 0);
       const key = a.roomId ?? UNASSIGNED_KEY;
 
-      if (!byRoom.has(key)) {
-        // fallback in case a room exists in appliances but not loaded
-        byRoom.set(key, { name: 'Unknown Room', value: 0 });
+      if (!byRoomName.has(key)) {
+        byRoomName.set(key, { name: 'Unknown Room', value: 0 });
       }
 
-      byRoom.get(key).value += kwh;
+      byRoomName.get(key).value += kwh;
     });
 
-    const rows = Array.from(byRoom.values())
+    const rows = Array.from(byRoomName.values())
       .filter((x) => x.value > 0)
       .sort((a, b) => b.value - a.value);
 
@@ -39,7 +37,6 @@ const RoomConsumption = ({ rooms, appliances }) => {
     }));
   }, [rooms, appliances]);
 
-  // simple rotating colors (no hard-coded scheme tied to room names)
   const COLORS = ['#F97316', '#3B82F6', '#8B5CF6', '#06B6D4', '#10B981', '#6B7280', '#EF4444'];
 
   return (
