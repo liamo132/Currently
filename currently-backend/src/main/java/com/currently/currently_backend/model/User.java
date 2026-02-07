@@ -1,5 +1,6 @@
 package com.currently.currently_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -7,10 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
-/**
- * Manual implementation of the User entity without Lombok.
- * Contains fields, constructors, getters, setters, and required methods for Spring Security.
- */
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {
@@ -19,13 +16,25 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // user-chosen handle (NOT the Spring Security "username")
+    @Column(nullable = false, unique = true)
     private String username;
+
     private String name;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @JsonIgnore
+    @Column(nullable = false)
     private String password;
 
-    public User() {
-    }
+    // Bills Vault PIN (hashed)
+    @JsonIgnore
+    @Column(name = "vault_pin_hash", length = 100)
+    private String vaultPinHash;
+
+    public User() {}
 
     public User(String username, String name, String email, String password) {
         this.username = username;
@@ -34,70 +43,38 @@ public class User implements UserDetails {
         this.password = password;
     }
 
-    // ----- Getters and Setters -----
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getHandle() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    @Override
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getVaultPinHash() { return vaultPinHash; }
+    public void setVaultPinHash(String vaultPinHash) { this.vaultPinHash = vaultPinHash; }
+
+    // IMPORTANT: Spring Security principal identifier should match how you authenticate (email)
+    @Override
     public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    // ----- UserDetails implementation -----
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.emptyList();
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled() { return true; }
 }

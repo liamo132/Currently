@@ -4,6 +4,7 @@ import HeaderUser from '../../public/components/header-user';
 import RoomConsumption from './roomconsumption';
 import BiggestEaters from './biggesteaters';
 import CostForecast from './costforecast';
+import BillsVault from './billsvault';
 import './css/watchyourwatts.css';
 import './css/watchtabs.css';
 
@@ -177,16 +178,12 @@ export default function WatchYourWatts() {
           </div>
         )}
 
-        {activeTab === 'bills' && (
-          <div style={{ marginTop: '1.5rem' }}>
-            <div className="cost-forecast-card">
-              <h2 className="cost-forecast-title">Bills Vault</h2>
-              <p style={{ color: '#6B7280' }}>
-                Next: secure bill uploads + per-user storage + list/download/delete.
-              </p>
-            </div>
-          </div>
-        )}
+       {activeTab === 'bills' && (
+         <div style={{ marginTop: '1.5rem' }}>
+           <BillsVault />
+         </div>
+       )}
+       
       </div>
     </div>
   );

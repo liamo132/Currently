@@ -33,7 +33,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
     }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -44,32 +43,54 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String token;
         final String email;
 
+        // 🔍 LOG THE REQUEST
+        System.out.println("...");
+        System.out.println("🌐 Request: " + request.getMethod() + " " + request.getRequestURI());
+        System.out.println("🔑 Auth Header: " + (authHeader != null ? authHeader.substring(0, Math.min(30, authHeader.length())) + "..." : "MISSING"));
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("❌ No Bearer token - allowing request to proceed");
             chain.doFilter(request, response);
             return;
         }
 
         token = authHeader.substring(7);
 
-        email = jwtUtil.extractUsername(token);
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        try {
+            email = jwtUtil.extractUsername(token);
+            System.out.println("📧 Extracted Email: " + email);
 
-            User user = userRepository.findByEmail(email).orElse(null);
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            if (user != null && jwtUtil.validateToken(token, email)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                user.getEmail(),
-                                null,
-                                null // no roles needed for this project
-                        );
+                User user = userRepository.findByEmail(email).orElse(null);
+                System.out.println("👤 User Found: " + (user != null ? user.getEmail() : "NULL"));
 
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
+                if (user != null && jwtUtil.validateToken(token, email)) {
+                    System.out.println("✅ Token VALID - Setting Authentication");
 
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    user,  // ✅ CHANGED: Store full User object
+                                    null,
+                                    user.getAuthorities()
+                            );
+
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    System.out.println("❌ Token INVALID or User NULL");
+                }
+            } else if (email == null) {
+                System.out.println("❌ Email extraction failed");
+            } else {
+                System.out.println("ℹ️ Authentication already set");
             }
+        } catch (Exception e) {
+            System.err.println("💥 Exception in JWT Filter: " + e.getMessage());
+            e.printStackTrace();
         }
 
         chain.doFilter(request, response);
