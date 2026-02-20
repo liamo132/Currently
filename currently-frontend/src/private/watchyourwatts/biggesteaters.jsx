@@ -8,7 +8,11 @@ const BiggestEaters = ({ appliances = [] }) => {
   // Then just take the top 5 so the card stays clean and doesn’t grow forever.
   const top5 = useMemo(() => {
     return [...(appliances || [])]
-      .sort((a, b) => Number(b.estimatedDailyCost || 0) - Number(a.estimatedDailyCost || 0))
+      .sort(
+        (a, b) =>
+          Number(b.computedDailyCost ?? b.estimatedDailyCost ?? 0) -
+          Number(a.computedDailyCost ?? a.estimatedDailyCost ?? 0)
+      )
       .slice(0, 5);
   }, [appliances]);
 
@@ -39,7 +43,7 @@ const BiggestEaters = ({ appliances = [] }) => {
 
           // If dailyKWh exists, show it. If not, we still show €/day so the UI always has meaning.
           const dailyKwh = Number(a.dailyKWh || 0);
-          const dailyCost = Number(a.estimatedDailyCost || 0);
+          const dailyCost = Number(a.computedDailyCost ?? a.estimatedDailyCost ?? 0);
 
           return (
             <div key={a.id ?? `${name}-${index}`} className="appliance-row">

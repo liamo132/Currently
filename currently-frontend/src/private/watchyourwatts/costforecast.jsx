@@ -19,17 +19,21 @@ const CostForecast = ({
   appliances = [],
   // total % reduction by end of month (1–10)
   reductionPercent = 10,
+  pricePerKwh = 0.3,
 }) => {
   const { forecastData, totals, label } = useMemo(() => {
     const pct = clamp(Number(reductionPercent) || 1, 1, 10);
     const targetFraction = pct / 100;
 
-    // 1. Baseline WEEKLY cost (already includes €/kWh upstream)
+    // 1. Baseline WEEKLY cost (recompute with latest price if dailyKWh is present)
     const weeklyCost =
-      appliances.reduce(
-        (sum, a) => sum + Number(a.estimatedDailyCost || 0),
-        0
-      ) * 7;
+      appliances.reduce((sum, a) => {
+        const dailyKwh = Number(a.dailyKWh || 0);
+        const computed = Number(a.computedDailyCost ?? dailyKwh * pricePerKwh);
+        const fallback = Number(a.estimatedDailyCost || 0);
+        const dailyCost = Number.isFinite(computed) && computed > 0 ? computed : fallback;
+        return sum + dailyCost;
+      }, 0) * 7;
 
     // 2. Monthly baseline
     const monthlyCost = weeklyCost * 4;
@@ -55,7 +59,7 @@ const CostForecast = ({
       },
       label: `${pct}% reduction by Week 4`,
     };
-  }, [appliances, reductionPercent]);
+  }, [appliances, reductionPercent, pricePerKwh]);
 
   return (
     <div className="cost-forecast-card">
@@ -69,11 +73,8 @@ const CostForecast = ({
           <LineChart data={forecastData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis dataKey="week" stroke="#6B7280" />
-            <YAxis
-              stroke="#6B7280"
-              label={{ value: 'Cost (€)', angle: -90, position: 'insideLeft' }}
-            />
-            <Tooltip formatter={(v) => `€${v.toFixed(2)}`} />
+            <YAxis stroke="#6B7280" label={{ value: 'Cost (€)', angle: -90, position: 'insideLeft' }} />
+            <Tooltip formatter={(v) => `€${Number(v).toFixed(2)}`} />
             <Legend />
             <Line
               type="monotone"
@@ -98,26 +99,18 @@ const CostForecast = ({
       <div className="savings-summary">
         <div className="savings-card">
           <p className="savings-label">Total Current Cost (4 weeks)</p>
-          <p className="savings-amount current">
-            €{totals.totalCurrentCost.toFixed(2)}
-          </p>
+          <p className="savings-amount current">€{totals.totalCurrentCost.toFixed(2)}</p>
         </div>
 
         <div className="savings-card">
           <p className="savings-label">Optimized Cost (4 weeks)</p>
-          <p className="savings-amount optimized">
-            €{totals.totalOptimizedCost.toFixed(2)}
-          </p>
+          <p className="savings-amount optimized">€{totals.totalOptimizedCost.toFixed(2)}</p>
         </div>
 
         <div className="savings-card highlight">
           <p className="savings-label">Potential Monthly Savings</p>
-          <p className="savings-amount savings">
-            €{totals.potentialSavings.toFixed(2)}
-          </p>
-          <p className="savings-percentage">
-            ({totals.savingsPercentage}% total • {label})
-          </p>
+          <p className="savings-amount savings">€{totals.potentialSavings.toFixed(2)}</p>
+          <p className="savings-percentage">({totals.savingsPercentage}% total • {label})</p>
         </div>
       </div>
     </div>

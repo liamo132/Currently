@@ -6,6 +6,8 @@ export default function EnergyCostSettings({
   setPricePerKwh,
   providerName,
   setProviderName,
+  onPersist,
+  saving = false,
 }) {
   const [draftCents, setDraftCents] = useState(() => Number(pricePerKwh || 0) * 100);
 
@@ -13,9 +15,12 @@ export default function EnergyCostSettings({
     setDraftCents(Number(pricePerKwh || 0) * 100);
   }, [pricePerKwh]);
 
-  const savePrice = () => {
+  const savePrice = async () => {
     const normalized = Number.isFinite(draftCents) ? draftCents : 0;
     setPricePerKwh(normalized / 100);
+    if (onPersist) {
+      await onPersist(normalized / 100, providerName);
+    }
   };
 
   return (
@@ -62,11 +67,11 @@ export default function EnergyCostSettings({
         </div>
 
         <p className="form-note">
-          Saved locally for now. Later this will be stored per-user in Postgres.
+          Saved to your account (and cached locally for quick access).
         </p>
         <div className="form-actions">
-          <button type="button" className="action-btn" onClick={savePrice}>
-            Save
+          <button type="button" className="action-btn" onClick={savePrice} disabled={saving}>
+            {saving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </form>

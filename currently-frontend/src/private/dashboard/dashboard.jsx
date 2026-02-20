@@ -8,6 +8,7 @@ import HomeOverview from './homeoverview';
 import QuickActions from './quickactions';
 import SystemStatus from './systemstatus';
 import WeeklyCostHero from './weeklycosthero';
+import { getEnergySettings, saveEnergySettings } from '../../api/energy';
 
 import './css/dashboard.css';
 
@@ -41,6 +42,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lastSync, setLastSync] = useState(null);
+  const [savingSettings, setSavingSettings] = useState(false);
 
   const energyRef = useRef(null);
   const overviewRef = useRef(null);
@@ -104,6 +106,17 @@ export default function Dashboard() {
         setLoading(true);
         setError('');
 
+        // Energy settings (DB-backed if available)
+        try {
+          const settings = await getEnergySettings();
+          if (settings) {
+            if (settings.pricePerKwh !== undefined) setPricePerKwh(Number(settings.pricePerKwh));
+            if (settings.providerName !== undefined) setProviderName(settings.providerName || '');
+          }
+        } catch (err) {
+          console.warn('Energy settings fetch failed; using local storage value', err);
+        }
+
         let roomsData = [];
         try {
           const roomsRes = await fetchWithAuth(`${API_BASE}/api/users/me/rooms`);
@@ -145,6 +158,21 @@ export default function Dashboard() {
 
     load();
   }, [API_BASE, fetchWithAuth, vaultActive]);
+
+  const persistEnergySettings = useCallback(
+    async (nextPrice, nextProvider) => {
+      setSavingSettings(true);
+      try {
+        await saveEnergySettings({ pricePerKwh: nextPrice, providerName: nextProvider });
+      } catch (err) {
+        console.warn('Persisting energy settings failed; kept locally', err);
+        setError((prev) => prev || 'Saved locally, but failed to save energy cost to server.');
+      } finally {
+        setSavingSettings(false);
+      }
+    },
+    [setError]
+  );
 
   const roomsCount = rooms.length;
   const appliancesCount = appliances.length;
@@ -207,6 +235,8 @@ export default function Dashboard() {
                 setPricePerKwh={setPricePerKwh}
                 providerName={providerName}
                 setProviderName={setProviderName}
+                onPersist={persistEnergySettings}
+                saving={savingSettings}
               />
             </div>
 

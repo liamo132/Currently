@@ -39,7 +39,7 @@ public class UserApplianceService {
 
 
     // Example tariff: €0.30 per kWh (you can move this to config later)
-    private static final double PRICE_PER_KWH = 0.30;
+    private static final double DEFAULT_PRICE_PER_KWH = 0.30;
 
     private final UserRepository userRepository;
     private final UserApplianceRepository userApplianceRepository;
@@ -80,10 +80,11 @@ public class UserApplianceService {
     // Outputs: List of UserApplianceResponse DTOs
     public List<UserApplianceResponse> getUserAppliances() {
         User user = getCurrentUser();
+        double pricePerKwh = resolvePricePerKwh(user);
         List<UserAppliance> entities = userApplianceRepository.findByUserOrderByCreatedAtAsc(user);
 
         return entities.stream()
-                .map(this::mapToResponseWithDerivedValues)
+                .map(entity -> mapToResponseWithDerivedValues(entity, pricePerKwh))
                 .collect(Collectors.toList());
     }
 
@@ -125,7 +126,8 @@ public class UserApplianceService {
         entity.setCreatedAt(LocalDateTime.now());
 
         UserAppliance saved = userApplianceRepository.save(entity);
-        return mapToResponseWithDerivedValues(saved);
+        double pricePerKwh = resolvePricePerKwh(user);
+        return mapToResponseWithDerivedValues(saved, pricePerKwh);
 
     }
 
@@ -180,7 +182,8 @@ public class UserApplianceService {
         entity.setUpdatedAt(LocalDateTime.now());
 
         UserAppliance updated = userApplianceRepository.save(entity);
-        return mapToResponseWithDerivedValues(updated);
+        double pricePerKwh = resolvePricePerKwh(user);
+        return mapToResponseWithDerivedValues(updated, pricePerKwh);
 
     }
 
@@ -245,7 +248,7 @@ public class UserApplianceService {
         }
     }
 
-    private UserApplianceResponse mapToResponseWithDerivedValues(UserAppliance entity) {
+    private UserApplianceResponse mapToResponseWithDerivedValues(UserAppliance entity, double pricePerKwh) {
         UserApplianceResponse response = new UserApplianceResponse();
         response.setId(entity.getId());
         response.setApplianceName(entity.getApplianceName());
@@ -258,7 +261,7 @@ public class UserApplianceService {
 
         double dailyKWh = calculateDailyKWh(entity, baseAppliance);
         response.setDailyKWh(dailyKWh);
-        response.setEstimatedDailyCost(dailyKWh * PRICE_PER_KWH);
+        response.setEstimatedDailyCost(dailyKWh * pricePerKwh);
 
         // ROOM MAPPING
         Room room = entity.getRoom();
@@ -268,6 +271,14 @@ public class UserApplianceService {
         }
 
         return response;
+    }
+
+    private double resolvePricePerKwh(User user) {
+        Double userPrice = user.getPricePerKwh();
+        if (userPrice != null && userPrice > 0) {
+            return userPrice;
+        }
+        return DEFAULT_PRICE_PER_KWH;
     }
 
 

@@ -37,6 +37,15 @@ export default function WatchYourWatts() {
 
   const navRef = useRef(null);
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
+  const appliancesWithCost = useMemo(
+    () =>
+      (appliances || []).map((a) => {
+        const dailyKwh = Number(a.dailyKWh || 0);
+        const computedDailyCost = dailyKwh * pricePerKwh || Number(a.estimatedDailyCost || 0);
+        return { ...a, computedDailyCost };
+      }),
+    [appliances, pricePerKwh]
+  );
 
   const tabs = useMemo(
     () => [
@@ -154,8 +163,8 @@ export default function WatchYourWatts() {
 
         {activeTab === 'insights' && (
           <div className="watchyourwatts-grid" style={{ marginTop: '1.5rem' }}>
-            <RoomConsumption rooms={rooms} appliances={appliances} />
-            <BiggestEaters rooms={rooms} appliances={appliances} />
+            <RoomConsumption rooms={rooms} appliances={appliancesWithCost} />
+            <BiggestEaters rooms={rooms} appliances={appliancesWithCost} />
           </div>
         )}
 
@@ -176,7 +185,11 @@ export default function WatchYourWatts() {
               </label>
             </div>
 
-            <CostForecast appliances={appliances} reductionPercent={reductionPercent} pricePerKwh={pricePerKwh} />
+            <CostForecast
+              appliances={appliancesWithCost}
+              reductionPercent={reductionPercent}
+              pricePerKwh={pricePerKwh}
+            />
           </div>
         )}
 

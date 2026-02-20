@@ -35,6 +35,13 @@ public class User implements UserDetails {
     @Column(name = "vault_pin_hash", length = 100)
     private String vaultPinHash;
 
+    // User-specific energy cost settings
+    @Column(name = "price_per_kwh")
+    private Double pricePerKwh;
+
+    @Column(name = "provider_name")
+    private String providerName;
+
     public User() {}
 
     public User(String username, String name, String email, String password) {
@@ -63,6 +70,12 @@ public class User implements UserDetails {
 
     public String getVaultPinHash() { return vaultPinHash; }
     public void setVaultPinHash(String vaultPinHash) { this.vaultPinHash = vaultPinHash; }
+
+    public Double getPricePerKwh() { return pricePerKwh; }
+    public void setPricePerKwh(Double pricePerKwh) { this.pricePerKwh = pricePerKwh; }
+
+    public String getProviderName() { return providerName; }
+    public void setProviderName(String providerName) { this.providerName = providerName; }
 
     // IMPORTANT: Spring Security principal identifier should match how you authenticate (email)
     @Override
