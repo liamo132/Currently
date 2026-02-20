@@ -1,0 +1,5 @@
+/* Energy Cost Settings specific hooks. Core styling is shared in dashboard.css */
+
+.energy-cost-settings .form-grid {
+  margin-top: 0.35rem;
+}

@@ -1,0 +1,59 @@
+:root {
+  --private-bg: #f8fafc;
+  --private-card-bg: #ffffff;
+  --private-card-radius: 16px;
+  --private-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --private-card-border: 1px solid rgba(0, 0, 0, 0.03);
+  --private-muted: #64748b;
+}
+
+.private-page {
+  min-height: 100vh;
+  background: var(--private-bg);
+}
+
+.private-content {
+  max-width: 1400px;
+  margin: 70px auto 0;
+  padding: 3rem 2rem 4rem;
+  animation: fadeInUp 0.4s ease-out;
+  /* added fadeinup so every private page enters like dashboard */
+}
+
+.private-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.4px;
+}
+
+.private-subtitle {
+  font-size: 1.05rem;
+  color: var(--private-muted);
+  margin: 0 0 2rem 0;
+}
+
+.private-card {
+  background: var(--private-card-bg);
+  border-radius: var(--private-card-radius);
+  padding: 2rem;
+  box-shadow: var(--private-card-shadow);
+  border: var(--private-card-border);
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.private-card--tight {
+  padding: 1.5rem;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

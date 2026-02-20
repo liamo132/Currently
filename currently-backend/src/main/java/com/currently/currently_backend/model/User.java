@@ -1,6 +1,6 @@
 package com.currently.currently_backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,12 +25,13 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @JsonIgnore
+    // Accept in request JSON, never include in response JSON
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private String password;
 
-    // Bills Vault PIN (hashed)
-    @JsonIgnore
+    // Bills Vault PIN (hashed) - never exposed
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "vault_pin_hash", length = 100)
     private String vaultPinHash;
 
@@ -46,7 +47,8 @@ public class User implements UserDetails {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getHandle() { return username; }
+    // Normal getter/setter for the user-chosen handle
+    public String getUsernameField() { return username; }
     public void setUsername(String username) { this.username = username; }
 
     public String getName() { return name; }

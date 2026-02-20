@@ -5,6 +5,7 @@ import RoomConsumption from './roomconsumption';
 import BiggestEaters from './biggesteaters';
 import CostForecast from './costforecast';
 import BillsVault from './billsvault';
+import '../shared/private-layout.css';
 import './css/watchyourwatts.css';
 import './css/watchtabs.css';
 
@@ -108,22 +109,23 @@ export default function WatchYourWatts() {
 
   if (loading) {
     return (
-      <div className="watchyourwatts-container">
+      <div className="watchyourwatts-container private-page">
         <HeaderUser activePage="watchyourwatts" />
-        <div className="watchyourwatts-content">
-          <h1 className="watchyourwatts-title">Watch Your Watts</h1>
-          <p className="watchyourwatts-subtitle">Loading insights...</p>
+        <div className="watchyourwatts-content private-content">
+          <h1 className="watchyourwatts-title private-title">Watch Your Watts</h1>
+          <p className="watchyourwatts-subtitle private-subtitle">visual insights into where your electricity is being used.</p>
+          <p>Loading insights...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="watchyourwatts-container">
+    <div className="watchyourwatts-container private-page">
       <HeaderUser activePage="watchyourwatts" />
-      <div className="watchyourwatts-content">
-        <h1 className="watchyourwatts-title">Watch Your Watts</h1>
-        <p className="watchyourwatts-subtitle">Real-time insights into your energy consumption</p>
+      <div className="watchyourwatts-content private-content">
+        <h1 className="watchyourwatts-title private-title">Watch Your Watts</h1>
+        <p className="watchyourwatts-subtitle private-subtitle">visual insights into where your electricity is being used.</p>
 
         {error && (
           <div className="myappliances-error" style={{ marginBottom: '1rem' }}>

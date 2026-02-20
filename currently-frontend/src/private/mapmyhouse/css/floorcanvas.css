@@ -1,9 +1,10 @@
 
 .floorcanvas-container {
-  background-color: var(--color-white);
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: var(--private-card-bg);
+  border-radius: var(--private-card-radius);
+  padding: 1.75rem;
+  box-shadow: var(--private-card-shadow);
+  border: var(--private-card-border);
 }
 
 .floorcanvas-header {
@@ -50,14 +51,16 @@
 
 /* Room Cards */
 .room-card {
-  border: 2px solid;
+  background: var(--private-card-bg);
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 1.25rem;
+  box-shadow: var(--private-card-shadow);
   transition: all 0.2s;
 }
 
 .room-card:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px);
 }
 
@@ -138,45 +141,14 @@
 
 
 /* Room Color Variations */
-.room-orange {
-  background-color: #FFF7ED;
-  border-color: #FED7AA;
-}
-
-.room-blue {
-  background-color: #EFF6FF;
-  border-color: #BFDBFE;
-}
-
-.room-emerald {
-  background-color: #ECFDF5;
-  border-color: #A7F3D0;
-}
-
-.room-cyan {
-  background-color: #ECFEFF;
-  border-color: #A5F3FC;
-}
-
-.room-purple {
-  background-color: #F5F3FF;
-  border-color: #DDD6FE;
-}
-
-.room-gray {
-  background-color: #F9FAFB;
-  border-color: #E5E7EB;
-}
-
-.room-pink {
-  background-color: #FDF2F8;
-  border-color: #FBCFE8;
-}
-
-.room-yellow {
-  background-color: #FEFCE8;
-  border-color: #FEF08A;
-}
+.room-orange { background-color: var(--private-card-bg); border-color: #FED7AA; }
+.room-blue { background-color: var(--private-card-bg); border-color: #BFDBFE; }
+.room-emerald { background-color: var(--private-card-bg); border-color: #A7F3D0; }
+.room-cyan { background-color: var(--private-card-bg); border-color: #A5F3FC; }
+.room-purple { background-color: var(--private-card-bg); border-color: #DDD6FE; }
+.room-gray { background-color: var(--private-card-bg); border-color: #E5E7EB; }
+.room-pink { background-color: var(--private-card-bg); border-color: #FBCFE8; }
+.room-yellow { background-color: var(--private-card-bg); border-color: #FEF08A; }
 
 /* Empty State */
 .room-empty-state {

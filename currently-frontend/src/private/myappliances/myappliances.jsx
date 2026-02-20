@@ -10,6 +10,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import HeaderUser from "../../public/components/header-user";
 import ApplianceCard from "./appliancecard";
+import "../shared/private-layout.css";
 import "./css/myappliances.css";
 
 export default function MyAppliances() {
@@ -229,10 +230,11 @@ export default function MyAppliances() {
 
   if (loading) {
     return (
-      <div className="myappliances-container">
+      <div className="myappliances-container private-page">
         <HeaderUser activePage="myappliances" />
-        <div className="myappliances-content">
-          <h1 className="myappliances-title">My Appliances</h1>
+        <div className="myappliances-content private-content">
+          <h1 className="myappliances-title private-title">My Appliances</h1>
+          <p className="myappliances-subtitle private-subtitle">manage appliances and define how they use energy.</p>
           <p>Loading your appliances...</p>
         </div>
       </div>
@@ -240,11 +242,12 @@ export default function MyAppliances() {
   }
 
   return (
-    <div className="myappliances-container">
+    <div className="myappliances-container private-page">
       <HeaderUser activePage="myappliances" />
 
-      <div className="myappliances-content">
-        <h1 className="myappliances-title">My Appliances</h1>
+      <div className="myappliances-content private-content">
+        <h1 className="myappliances-title private-title">My Appliances</h1>
+        <p className="myappliances-subtitle private-subtitle">manage appliances and define how they use energy.</p>
 
         {error && (
           <div className="myappliances-error">

@@ -1,18 +1,11 @@
 /*
  * File: Signup.jsx
  * Description: Registration page for creating new Currently accounts.
- * Author: Liam Connell
- * Date: 2025-11-11
- *
- * Notes:
- * - Connects directly to the backend /api/auth/register endpoint.
- * - Validates form input, shows inline errors, and handles server messages.
- * - Stores JWT token in localStorage and redirects user to /dashboard after success.
  */
 
 import React, { useState } from "react";
-import "./auth.css";   // keep this; it’s in the same folders
-import { register } from "../../../api/auth"; // backend call handler
+import "./auth.css";
+import { register } from "../../../api/auth";
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -24,14 +17,12 @@ export default function Signup() {
   const [errors, setErrors] = useState({});
   const [serverMsg, setServerMsg] = useState("");
 
-  // ----- Input change handler -----
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  // ----- Client-side validation -----
   const validateForm = () => {
     const newErrors = {};
 
@@ -58,29 +49,28 @@ export default function Signup() {
     return newErrors;
   };
 
-  // ----- Submit handler -----
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerMsg("");
-    const newErrors = validateForm();
 
+    const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
     try {
-      // Call backend register endpoint
+      // student note:
+      // backend expects JSON body -> { username, name, email, password }
       const { token } = await register({
-        username: formData.name,
+        // quick “good enough” username for now (later add a real username field)
+        username: formData.email.split("@")[0],
+        name: formData.name,
         email: formData.email,
         password: formData.password,
       });
 
-      // Store token locally
       localStorage.setItem("token", token);
-
-      // Redirect to private dashboard
       window.location.href = "/dashboard";
     } catch (err) {
       setServerMsg(err.message || "Registration failed");
@@ -95,7 +85,6 @@ export default function Signup() {
           Start tracking your energy usage with Currently
         </p>
 
-        {/* Signup Form */}
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="name">Full Name</label>
@@ -108,9 +97,7 @@ export default function Signup() {
               className={errors.name ? "error" : ""}
               placeholder="John Doe"
             />
-            {errors.name && (
-              <span className="error-message">{errors.name}</span>
-            )}
+            {errors.name && <span className="error-message">{errors.name}</span>}
           </div>
 
           <div className="form-group">
@@ -157,13 +144,10 @@ export default function Signup() {
               placeholder="Re-enter your password"
             />
             {errors.confirmPassword && (
-              <span className="error-message">
-                {errors.confirmPassword}
-              </span>
+              <span className="error-message">{errors.confirmPassword}</span>
             )}
           </div>
 
-          {/* Backend or network feedback */}
           {serverMsg && <p className="server-message">{serverMsg}</p>}
 
           <button type="submit" className="auth-button">

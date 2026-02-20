@@ -1,32 +1,41 @@
-/*
- * File: auth.js
- * Description: Simple auth API calls to Spring Boot backend.
- * Author: Liam Connell
- * Date: 2025-11-11
- */
+// src/api/auth.js
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8080";
 
-const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8080";
-
-export async function register({ username, email, password }) {
-  const res = await fetch(`${BASE_URL}/api/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, email, password }),
-  });
+async function parseJsonOrThrow(res) {
+  // If backend ever returns non-JSON errors, this keeps the error readable.
   const text = await res.text();
-  if (!res.ok) throw new Error(text || "Registration failed");
-  // text is like: "Registration successful. Token: <JWT>"
-  const token = text.split("Token:")[1]?.trim();
-  return { token, raw: text };
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { error: text };
+  }
+
+  if (!res.ok) {
+    throw new Error(data.error || "Request failed");
+  }
+
+  return data;
 }
 
-export async function login({ email, password }) {
-  const res = await fetch(
-    `${BASE_URL}/api/auth/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
-    { method: "POST" }
-  );
-  const text = await res.text();
-  if (!res.ok) throw new Error(text || "Login failed");
-  const token = text.split("Token:")[1]?.trim();
-  return { token, raw: text };
+export async function register(payload) {
+  const res = await fetch(`${API_BASE}/api/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  // Expect { token }
+  return await parseJsonOrThrow(res);
+}
+
+export async function login(payload) {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  // Expect { token }
+  return await parseJsonOrThrow(res);
 }

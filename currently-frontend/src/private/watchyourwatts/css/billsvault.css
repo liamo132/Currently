@@ -4,7 +4,10 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
-  background-color: var(--color-white);
+  background: var(--private-card-bg);
+  border-radius: var(--private-card-radius);
+  box-shadow: var(--private-card-shadow);
+  border: var(--private-card-border);
 }
 
 .vault-title {
@@ -139,7 +142,7 @@
 
 /* Upload Section */
 .vault-upload-section {
-  background-color: var(--color-offwhite);
+  background-color: var(--private-card-bg);
   padding: 2rem;
   border-radius: 12px;
   margin: 2rem 0;
@@ -177,7 +180,7 @@
 /* File List Container - with proper height constraints */
 .vault-file-list-wrapper {
   margin: 2rem 0;
-  max-height: 400px;  /*  Changed from 400px to 200px for testing */
+  max-height: 400px;  
   overflow: hidden;
 }
 
@@ -185,7 +188,7 @@
   list-style: none;
   padding: 0.5rem;
   margin: 0;
-  max-height: 300px;  /* Changed from 400px to 200px for testing */
+  max-height: 300px;  
   overflow-y: auto;
   border: 2px solid #E5E7EB;
   border-radius: 8px;
@@ -251,8 +254,9 @@
   color: #6B7280;
   font-style: italic;
   padding: 2rem;
-  background-color: var(--color-offwhite);
-  border-radius: 8px;
+  background-color: var(--private-card-bg);
+  border-radius: 12px;
+  border: 1px dashed #d1d5db;
 }
 
 /* Responsive Design */

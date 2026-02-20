@@ -12,7 +12,7 @@ import Footer from "./public/components/footer";
 import IndexPage from "./public/pages/index/index.jsx";
 import Login from "./public/pages/auth/Login.jsx";
 import Signup from "./public/pages/auth/Signup.jsx";
-import Dashboard from "./private/Dashboard.jsx";
+import Dashboard from "./private/dashboard/dashboard.jsx";
 import MyAppliances from "./private/myappliances/myappliances.jsx";
 import MapMyHouse from "./private/mapmyhouse/mapmyhouse.jsx";
 import WatchYourWatts from "./private/watchyourwatts/watchyourwatts.jsx";

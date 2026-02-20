@@ -1,11 +1,3 @@
-/*
- * File: JwtAuthenticationFilter.java
- * Description: Reads JWT from Authorization header, validates it, and sets the
- *              authenticated user in Spring Security's context.
- * Author: Liam Connell
- * Date: 2025-12-01
- */
-
 package com.currently.currently_backend.config;
 
 import com.currently.currently_backend.util.JwtUtil;
@@ -33,6 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
     }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -40,21 +33,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
-        final String token;
+        String token;
         final String email;
 
-        // 🔍 LOG THE REQUEST
         System.out.println("...");
         System.out.println("🌐 Request: " + request.getMethod() + " " + request.getRequestURI());
-        System.out.println("🔑 Auth Header: " + (authHeader != null ? authHeader.substring(0, Math.min(30, authHeader.length())) + "..." : "MISSING"));
+        System.out.println("🔑 Auth Header: " + (authHeader != null
+                ? authHeader.substring(0, Math.min(60, authHeader.length())) + "..."
+                : "MISSING"));
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("❌ No Bearer token - allowing request to proceed");
             chain.doFilter(request, response);
             return;
         }
 
-        token = authHeader.substring(7);
+        token = authHeader.substring(7).trim();
+
+        // ---- Defensive cleanup: remove quotes / accidental JSON wrapping ----
+        // Cases seen in the wild:
+        // Bearer "eyJ..."
+        // Bearer {"token":"eyJ..."}
+        token = token.replace("\"", "");
+
+        if (token.startsWith("{") && token.contains("token")) {
+            // very small extraction without adding JSON dependency here
+            int idx = token.indexOf("token:");
+            if (idx == -1) idx = token.indexOf("token");
+            // If it's JSON-ish, try a safer approach:
+            // {"token":"<jwt>"} -> extract between first ':' and last '}'
+            int colon = token.indexOf(':');
+            int endBrace = token.lastIndexOf('}');
+            if (colon != -1 && endBrace != -1 && endBrace > colon) {
+                String maybe = token.substring(colon + 1, endBrace).trim();
+                // remove any remaining braces/quotes
+                maybe = maybe.replace("{", "").replace("}", "").replace("\"", "").trim();
+                token = maybe;
+            }
+        }
+        // -------------------------------------------------------------------
 
         try {
             email = jwtUtil.extractUsername(token);
@@ -70,7 +86,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
-                                    user,  // ✅ CHANGED: Store full User object
+                                    user,
                                     null,
                                     user.getAuthorities()
                             );

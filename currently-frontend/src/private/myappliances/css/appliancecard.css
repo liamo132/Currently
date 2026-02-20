@@ -1,13 +1,14 @@
 
 .appliance-card {
-  background-color: #F9FAFB;
-  border-radius: 0.5rem;
-  border: 1px solid #E5E7EB;
+  background: var(--private-card-bg);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
   padding: 1.25rem;
   display: flex;
   align-items: center;
   gap: 1.5rem;
   min-height: auto;
+  box-shadow: var(--private-card-shadow);
 }
 
 .card-header {

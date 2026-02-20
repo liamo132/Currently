@@ -14,6 +14,7 @@ import FloorNav from './floornav';
 import FloorCanvas from './floorcanvas';
 import RoomForm from './roomform';
 import { getInitialHouseData } from './roomUtils';
+import '../shared/private-layout.css';
 import './css/mapmyhouse.css';
 
 export default function MapMyHouse() {
@@ -387,10 +388,11 @@ useEffect(() => {
 
   if (loading) {
     return (
-      <div className="mapmyhouse-container">
+      <div className="mapmyhouse-container private-page">
         <HeaderUser activePage="mapmyhouse" />
-        <div className="mapmyhouse-content">
-          <h1 className="mapmyhouse-title">Map My House</h1>
+        <div className="mapmyhouse-content private-content">
+          <h1 className="mapmyhouse-title private-title">Map My House</h1>
+          <p className="mapmyhouse-subtitle private-subtitle">build a digital layout of your home and assign rooms.</p>
           <p>Loading your house layout...</p>
         </div>
       </div>
@@ -398,11 +400,12 @@ useEffect(() => {
   }
 
   return (
-    <div className="mapmyhouse-container">
+    <div className="mapmyhouse-container private-page">
       <HeaderUser activePage="mapmyhouse" />
 
-      <div className="mapmyhouse-content">
-        <h1 className="mapmyhouse-title">Map My House</h1>
+      <div className="mapmyhouse-content private-content">
+        <h1 className="mapmyhouse-title private-title">Map My House</h1>
+        <p className="mapmyhouse-subtitle private-subtitle">build a digital layout of your home and assign rooms.</p>
 
         {error && (
           <div className="myappliances-error" style={{ marginBottom: '1rem' }}>
