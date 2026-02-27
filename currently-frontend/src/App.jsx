@@ -6,7 +6,8 @@
  * Date: 2025-12-01
  */
 
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Header from "./public/components/header";
 import Footer from "./public/components/footer";
 import IndexPage from "./public/pages/index/index.jsx";
@@ -16,7 +17,30 @@ import Dashboard from "./private/dashboard/dashboard.jsx";
 import MyAppliances from "./private/myappliances/myappliances.jsx";
 import MapMyHouse from "./private/mapmyhouse/mapmyhouse.jsx";
 import WatchYourWatts from "./private/watchyourwatts/watchyourwatts.jsx";
+import SmartInsightsPage from "./private/smartinsights/smartinsightspage.jsx";
 
+function HashScrollManager() {
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    if (!hash) {
+      if (pathname === "/") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return;
+    }
+
+    const id = decodeURIComponent(hash.slice(1));
+    const target = document.getElementById(id);
+    if (!target) return;
+
+    const headerOffset = 88;
+    const top = target.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+    window.scrollTo({ top, behavior: "smooth" });
+  }, [pathname, hash]);
+
+  return null;
+}
 
 /**
  * Component: PublicLayout
@@ -27,13 +51,14 @@ import WatchYourWatts from "./private/watchyourwatts/watchyourwatts.jsx";
 function PublicLayout() {
   return (
     <>
+      <HashScrollManager />
       <Header />
       <Routes>
         <Route path="/" element={<IndexPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>
-      {/* <Footer /> â€” optional */}
+      {/* <Footer /> — optional */}
     </>
   );
 }
@@ -83,24 +108,31 @@ export default function App() {
         />
 
         <Route
-  path="/mapmyhouse"
-  element={
-    <PrivateRoute>
-      <MapMyHouse />
-    </PrivateRoute>
-  }
-/>
+          path="/mapmyhouse"
+          element={
+            <PrivateRoute>
+              <MapMyHouse />
+            </PrivateRoute>
+          }
+        />
 
-<Route
-  path="/watchyourwatts"
-  element={
-    <PrivateRoute>
-      <WatchYourWatts />
-    </PrivateRoute>
-  }
-/>
+        <Route
+          path="/watchyourwatts"
+          element={
+            <PrivateRoute>
+              <WatchYourWatts />
+            </PrivateRoute>
+          }
+        />
 
-
+        <Route
+          path="/smartinsights"
+          element={
+            <PrivateRoute>
+              <SmartInsightsPage />
+            </PrivateRoute>
+          }
+        />
 
         {/* Fallback for unknown paths */}
         <Route path="*" element={<Navigate to="/" replace />} />

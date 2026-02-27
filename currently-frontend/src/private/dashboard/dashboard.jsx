@@ -257,7 +257,7 @@ export default function Dashboard() {
               onVault={() => navigate('/watchyourwatts')}
               onMap={() => navigate('/mapmyhouse')}
               onAppliances={() => navigate('/my-appliances')}
-              onInsights={() => navigate('/watchyourwatts')}
+              onInsights={() => navigate('/smartinsights')}
             />
 
             <div ref={statusRef}>

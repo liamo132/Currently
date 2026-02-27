@@ -1,171 +1,181 @@
-
-
-
-/* ----- Section Container ----- */
-.features {
-  padding: 60px 20px;
-  background: var(--color-offwhite);
+.landing-features {
+  padding: 5rem 0 2.8rem;
+  background: #ffffff;
 }
 
-/* Centers the heading and description text */
-.features .what-to-expect {
-  max-width: 1000px;
-  margin: 0 auto;
-  text-align: center;
+.section-head {
+  max-width: 760px;
 }
 
-/* Section heading */
-.features h2 {
-  font-size: 2.6rem;
-  margin-bottom: 8px;
-  color: #10b981; /* primary green accent */
+.section-kicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  font-weight: 700;
 }
 
-/* Subtitle under main heading */
-.features .subtitle {
-  color: #111827;
-  opacity: 0.85;
-  margin-bottom: 24px;
+.section-head h2 {
+  margin: 0.9rem 0 0;
+  color: var(--color-accent-dark);
+  font-size: clamp(1.6rem, 3.2vw, 2.5rem);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
-/* ----- Carousel Container ----- */
-.carousel {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #ffffff;
-  padding: 0 25px 30px;
-  border-radius: 10px;
+.features-grid {
+  margin-top: 2rem;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
 }
 
-/* Holds the rotating slides */
-.carousel-track {
-  width: 720px;
-  height: 420px;
+.feature-card {
+  grid-column: span 2;
+  background: #ffffff;
+  border: 1px solid #dee6ee;
+  border-radius: 0.95rem;
+  padding: 1rem;
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  border-color: #c7d2df;
+  box-shadow: 0 14px 24px rgba(15, 23, 42, 0.08);
+}
+
+.feature-image-wrap {
+  border-radius: 0.7rem;
+  border: 1px solid #e3e9ef;
+  background: linear-gradient(180deg, #fcfdfd 0%, #f6f8f7 100%);
   overflow: hidden;
-  position: relative;
+  aspect-ratio: 16 / 10;
+  padding: 0.75rem;
+  display: grid;
+  place-items: center;
 }
 
-/* Each slide (image + animation setup) */
-.carousel-slide {
-  position: absolute;
-  top: 0;
-  left: 0;
+.feature-image-wrap img {
   width: 100%;
   height: 100%;
-  opacity: 0;
-  transform: scale(0.98);
-  transition: opacity 360ms ease, transform 360ms ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Active slide is visible and slightly larger */
-.carousel-slide.active {
-  opacity: 1;
-  transform: scale(1);
-  z-index: 2;
-}
-
-/* Image appearance */
-.carousel-slide img {
-  max-width: 100%;
-  max-height: 100%;
   object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(2, 201, 251, 0.08);
 }
 
-/* ----- Navigation Buttons (optional if re-added) ----- */
-.carousel-btn {
-  background: rgba(0, 0, 0, 0.04);
-  border: none;
-  width: 44px;
-  height: 44px;
+.feature-card h3 {
+  margin: 0.95rem 0 0;
+  font-size: 1.02rem;
+  color: var(--color-accent-dark);
+}
+
+.feature-card p {
+  margin: 0.55rem 0 0;
+  line-height: 1.6;
+  color: #475569;
+}
+
+.how-it-works {
+  padding: 3rem 0 4.8rem;
+  background: #f3f4f6;
+  margin-bottom: 3rem;
+}
+
+.steps-grid {
+  margin-top: 2rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.step-card {
+  background: #ffffff;
+  border: 1px solid #dce5ee;
+  border-radius: 0.95rem;
+  padding: 1.15rem;
+}
+
+.step-index {
+  display: inline-flex;
+  width: 2.1rem;
+  height: 2.1rem;
   border-radius: 999px;
-  display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: 1.8rem;
+  font-size: 0.75rem;
+  font-weight: 800;
   color: var(--color-accent-dark);
-  transition: transform 120ms ease, background 120ms ease;
+  background: #e8f8f1;
+  border: 1px solid #a7ddca;
 }
 
-.carousel-btn:hover {
-  transform: translateY(-4px);
-  background: rgba(2, 201, 251, 0.08);
-}
-
-.carousel-btn.prev {
-  position: absolute;
-  left: calc(50% - 380px);
-}
-
-.carousel-btn.next {
-  position: absolute;
-  right: calc(50% - 380px);
-}
-
-/* ----- Dots & Caption ----- */
-.carousel-dots {
-  margin-top: 14px;
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-}
-
-/* Caption under each image */
-.carousel-caption {
-  margin-top: 12px;
-  font-size: 1rem;
-  font-weight: 500;
+.step-card h3 {
+  margin: 0.9rem 0 0;
   color: var(--color-accent-dark);
-  opacity: 0.95;
-  min-height: 1.4em; /* prevents layout jump when captions change */
+  font-size: 1.05rem;
 }
 
-/* Pagination dots */
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: #f3f4f6;
-  border: 1px solid #0f976a;
-  cursor: pointer;
-  margin-left: 8px;
+.step-card p {
+  margin: 0.6rem 0 0;
+  color: #475569;
+  line-height: 1.6;
 }
 
-/* Active dot highlighted */
-.dot.active {
-  background: #10b981;
+.final-cta {
+  padding: 0 0 5.2rem;
+  background: #ffffff;
 }
 
-/* ----- Responsive Adjustments ----- */
-@media (max-width: 880px) {
-  .carousel-track {
-    width: 560px;
-    height: 320px;
+.final-cta-inner {
+  background: #ffffff;
+  border: 1px solid #dce5ee;
+  border-radius: 1rem;
+  padding: 2.25rem;
+}
+
+.final-cta-inner h2 {
+  margin: 0;
+  color: var(--color-accent-dark);
+  font-size: clamp(1.6rem, 3.2vw, 2.35rem);
+  letter-spacing: -0.01em;
+}
+
+.final-cta-inner p {
+  margin: 0.7rem 0 0;
+  color: #475569;
+  max-width: 60ch;
+}
+
+.final-cta-inner .hero-btn-secondary {
+  background: transparent;
+  border-color: #94a3b8;
+  color: var(--color-accent-dark);
+}
+
+@media (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
-  .carousel-btn.prev {
-    left: calc(50% - 300px);
+
+  .feature-card {
+    grid-column: span 1;
   }
-  .carousel-btn.next {
-    right: calc(50% - 300px);
+
+  .steps-grid {
+    grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 600px) {
-  .carousel-track {
-    width: 100%;
-    height: 220px;
+@media (max-width: 640px) {
+  .landing-features {
+    padding: 4rem 0 2rem;
   }
-  .carousel-btn.prev {
-    left: 8px;
+
+  .features-grid {
+    grid-template-columns: 1fr;
   }
-  .carousel-btn.next {
-    right: 8px;
+
+  .final-cta-inner {
+    padding: 1.25rem;
   }
 }

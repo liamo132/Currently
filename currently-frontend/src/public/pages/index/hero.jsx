@@ -1,44 +1,64 @@
-/*
- * File: hero.jsx
- * Description: Hero section for the public landing page.
- * Author: Liam Connell
- * Date: 2025-11-11
- *
- * Notes:
- * - Displays the main banner image and introductory text for the Currently platform.
- * - This is the first section users see when visiting the site.
- * - Includes a "Get Started" button which can later be linked to the signup route.
- */
-
 import React from "react";
-import "../index/css/hero.css"; // adjusted import path for new structure
-import HeroImg from "../../assets/img/Hero.png"; // updated relative path
+import "../index/css/hero.css";
+import HeroImg from "../../assets/img/Hero.png";
 
-// Functional component for the landing page hero section
 export default function Hero() {
   return (
-    <main>
-      <div className="container">
-        {/* main illustrative image for the landing section */}
-        <img src={HeroImg} alt="Illustration showing energy monitoring" />
+    <main className="landing-main">
+      <section className="hero-section">
+        <div className="landing-container hero-grid">
+          <div className="hero-copy">
+            <p className="hero-kicker">Household Energy Intelligence</p>
+            <h1>Cut household energy spend with appliance-level clarity.</h1>
+            <p className="hero-subtext">
+              Currently turns your usage and bill history into structured weekly actions,
+              so you can reduce waste, lower cost, and track real progress.
+            </p>
 
-        {/* text content alongside the hero image */}
-        <div className="hero-text">
-          <h1>See your power, help shape your savings.</h1>
-          <p>
-            Currently helps you monitor energy usage, map your home appliances,
-            and save money while keeping your data secure.
-          </p>
+            <div className="hero-ctas">
+              <a className="hero-btn hero-btn-primary" href="/signup">Start free</a>
+              <a className="hero-btn hero-btn-secondary" href="/#how-it-works">See how it works</a>
+            </div>
 
-          {/* button leading to signup (to be wired to navigation later) */}
-          <button
-            onClick={() => (window.location.href = "/signup")}
-            aria-label="Get started by creating an account"
-          >
-            Get Started
-          </button>
+            <div className="trust-strip" aria-label="Trust indicators">
+              <span>Private by default</span>
+              <span>Secure bill history</span>
+              <span>Built for real household decisions</span>
+            </div>
+          </div>
+
+          <div className="hero-visual" aria-hidden="true">
+            <img src={HeroImg} alt="Currently product dashboard preview" />
+
+          </div>
         </div>
-      </div>
+      </section>
+
+      <section className="problem-solution-section">
+        <div className="landing-container">
+          <div className="problem-row">
+            <article>
+              <h2>Bills feel unpredictable</h2>
+              <p>Monthly totals change, but the reasons stay unclear.</p>
+            </article>
+            <article>
+              <h2>No appliance-level visibility</h2>
+              <p>It is hard to identify where energy spend is actually coming from.</p>
+            </article>
+            <article>
+              <h2>Advice is too generic</h2>
+              <p>Most tips are not tied to your home, layout, or usage habits.</p>
+            </article>
+          </div>
+
+          <div className="solution-panel">
+            <p>
+              <strong>Currently solves this with a structured pipeline:</strong> map your home,
+              break down appliance-level costs, and get prioritized savings actions with expected impact.
+            </p>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

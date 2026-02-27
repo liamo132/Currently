@@ -12,7 +12,7 @@ import './css/watchtabs.css';
 export default function WatchYourWatts() {
   const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
 
-  const [activeTab, setActiveTab] = useState('insights');
+  const [activeTab, setActiveTab] = useState('usage');
   const [reductionPercent, setReductionPercent] = useState(10);
 
   const [rooms, setRooms] = useState([]);
@@ -20,13 +20,13 @@ export default function WatchYourWatts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Read-only here (user edits this in Dashboard later)
+  // read-only here (user edits this in Dashboard later)
   const [pricePerKwh, setPricePerKwh] = useState(() => {
     const saved = localStorage.getItem('pricePerKwh');
     return saved ? Number(saved) : 0.30;
   });
 
-  // If dashboard changes it, this keeps it in sync when user returns to this page.
+  // if dashboard changes it, this keeps it in sync when user returns to this page.
   useEffect(() => {
     const onStorage = (e) => {
       if (e.key === 'pricePerKwh') setPricePerKwh(Number(e.newValue) || 0.30);
@@ -49,7 +49,7 @@ export default function WatchYourWatts() {
 
   const tabs = useMemo(
     () => [
-      { id: 'insights', label: 'Insights' },
+      { id: 'usage', label: 'Usage Breakdown' },
       { id: 'cost', label: 'Cost Forecast' },
       { id: 'bills', label: 'Bills Vault' },
     ],
@@ -142,7 +142,7 @@ export default function WatchYourWatts() {
           </div>
         )}
 
-        {/* Tabs */}
+        {/* tabs stay in the same place, just adding new options */}
         <div className="watchtabs-wrap" ref={navRef}>
           <div
             className="watchtabs-indicator"
@@ -161,7 +161,7 @@ export default function WatchYourWatts() {
           ))}
         </div>
 
-        {activeTab === 'insights' && (
+        {activeTab === 'usage' && (
           <div className="watchyourwatts-grid" style={{ marginTop: '1.5rem' }}>
             <RoomConsumption rooms={rooms} appliances={appliancesWithCost} />
             <BiggestEaters rooms={rooms} appliances={appliancesWithCost} />
@@ -170,7 +170,7 @@ export default function WatchYourWatts() {
 
         {activeTab === 'cost' && (
           <div style={{ marginTop: '1.5rem' }}>
-            {/* Only keep reduction here. Cost per kWh moved to Dashboard. */}
+            {/* only keep reduction here. cost per kWh moved to Dashboard. */}
             <div className="watchtabs-controls">
               <label className="watchtabs-label">
                 Target reduction (% by end of month)
@@ -193,12 +193,11 @@ export default function WatchYourWatts() {
           </div>
         )}
 
-       {activeTab === 'bills' && (
-         <div style={{ marginTop: '1.5rem' }}>
-           <BillsVault />
-         </div>
-       )}
-       
+        {activeTab === 'bills' && (
+          <div style={{ marginTop: '1.5rem' }}>
+            <BillsVault />
+          </div>
+        )}
       </div>
     </div>
   );

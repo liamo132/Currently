@@ -10,7 +10,8 @@ const Header = ({ activePage }) => {
     { name: 'Dashboard',         id: 'dashboard',      path: '/dashboard' },
     { name: 'Map My House',      id: 'mapmyhouse',     path: '/mapmyhouse' },
     { name: 'My Appliances',     id: 'myappliances',   path: '/my-appliances' },
-    { name: 'Watch your Watts',  id: 'watchyourwatts', path: '/watchyourwatts' }
+    { name: 'Watch your Watts',  id: 'watchyourwatts', path: '/watchyourwatts' },
+    { name: 'Smart Insights',    id: 'smartinsights',  path: '/smartinsights' }
   ];
 
   const handleLogout = () => {

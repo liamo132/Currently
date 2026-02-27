@@ -1,0 +1,142 @@
+.smartinsights-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.smartinsights-controls {
+  background: var(--private-card-bg);
+  border: var(--private-card-border);
+  border-radius: var(--private-card-radius);
+  box-shadow: var(--private-card-shadow);
+  padding: 1rem;
+}
+
+.smartinsights-label {
+  display: block;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 0.5rem;
+}
+
+.smartinsights-control-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.smartinsights-select {
+  min-width: 240px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.6rem 0.75rem;
+  color: var(--color-text);
+}
+
+.smartinsights-btn {
+  border: none;
+  border-radius: 8px;
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+}
+
+.smartinsights-btn:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.smartinsights-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.smartinsights-card {
+  background: var(--private-card-bg);
+  border: var(--private-card-border);
+  border-radius: var(--private-card-radius);
+  box-shadow: var(--private-card-shadow);
+  padding: 1rem;
+}
+
+.smartinsights-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.smartinsights-reasoning {
+  margin: 0 0 0.75rem 0;
+  color: #374151;
+}
+
+.smartinsights-section {
+  margin-bottom: 0.75rem;
+}
+
+.smartinsights-section p {
+  margin: 0.3rem 0 0 0;
+  color: #374151;
+}
+
+.smartinsights-k {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.smartinsights-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: #4b5563;
+  font-size: 0.92rem;
+  margin-bottom: 0.5rem;
+}
+
+.smartinsights-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 0.75rem;
+  border-radius: 8px;
+}
+
+.smartinsights-note {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  padding: 0.75rem;
+  border-radius: 8px;
+}
+
+.smartinsights-empty {
+  background: var(--private-card-bg);
+  border: var(--private-card-border);
+  border-radius: var(--private-card-radius);
+  box-shadow: var(--private-card-shadow);
+  padding: 1.25rem;
+  color: #4b5563;
+}
+
+.smartinsights-empty h3 {
+  margin: 0 0 0.5rem 0;
+  color: #111827;
+}
+
+.smartinsights-empty p {
+  margin: 0;
+}
+
+.smartinsights-empty--subtle {
+  background: #f9fafb;
+}
+
+@media (max-width: 1024px) {
+  .smartinsights-grid {
+    grid-template-columns: 1fr;
+  }
+}
