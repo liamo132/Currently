@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: currently-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required and must be set before starting services}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required and must be set before starting services}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required and must be set before starting services}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - currently-postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Optional local API container is intentionally omitted so backend remains run from IDE/Maven wrapper.
+
+volumes:
+  currently-postgres-data:

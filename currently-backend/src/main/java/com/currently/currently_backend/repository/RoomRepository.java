@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface RoomRepository extends JpaRepository<Room, Long> {
 
-    List<Room> findByUserOrderByFloorLabelAscNameAsc(User user);
+    List<Room> findByUser(User user);
 }

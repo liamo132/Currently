@@ -6,6 +6,7 @@
 
 package com.currently.currently_backend.model;
 
+import com.currently.currently_backend.persistence.EncryptedStringConverter;
 import jakarta.persistence.*;
 
 @Entity
@@ -22,14 +23,17 @@ public class Room {
     private User user;
 
     // Display name (e.g. "Liam's Room", "Kitchen")
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(nullable = false)
     private String name;
 
     // Floor label (e.g. "Ground Floor", "First Floor")
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(nullable = false)
     private String floorLabel;
 
     // Optional type (e.g. "Bedroom", "Living Room", "Bathroom")
+    @Convert(converter = EncryptedStringConverter.class)
     private String type;
 
     public Room() {

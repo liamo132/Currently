@@ -18,6 +18,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Custom query methods automatically implemented by Spring Data JPA
     Optional<User> findByEmail(String email);
     Optional<User> findByUsername(String username);
+    Optional<User> findByEmailHash(String emailHash);
+    Optional<User> findByUsernameHash(String usernameHash);
     boolean existsByEmail(String email);
     boolean existsByUsername(String username);
+    boolean existsByEmailHash(String emailHash);
+    boolean existsByUsernameHash(String usernameHash);
 }

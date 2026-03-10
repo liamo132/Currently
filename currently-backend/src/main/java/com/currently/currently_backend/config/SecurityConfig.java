@@ -8,7 +8,6 @@
 
 package com.currently.currently_backend.config;
 
-import com.currently.currently_backend.config.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,6 +40,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
+            ApiRateLimitFilter apiRateLimitFilter,
             JwtAuthenticationFilter jwtAuthenticationFilter
     ) throws Exception {
 
@@ -63,6 +63,9 @@ public class SecurityConfig {
 
                 // Register custom JWT filter BEFORE Spring's username/password filter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+
+                // Basic abuse protection for auth and vault endpoints
+                .addFilterBefore(apiRateLimitFilter, JwtAuthenticationFilter.class)
 
                 // Stateless (no sessions)
                 .sessionManagement(session ->

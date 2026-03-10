@@ -1,5 +1,6 @@
 package com.currently.currently_backend.model;
 
+import com.currently.currently_backend.persistence.EncryptedStringConverter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,13 +18,22 @@ public class User implements UserDetails {
     private Long id;
 
     // user-chosen handle (NOT the Spring Security "username")
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(nullable = false, unique = true)
     private String username;
 
+    @Convert(converter = EncryptedStringConverter.class)
     private String name;
 
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(name = "username_hash", unique = true, length = 88)
+    private String usernameHash;
+
+    @Column(name = "email_hash", unique = true, length = 88)
+    private String emailHash;
 
     // Accept in request JSON, never include in response JSON
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -40,6 +50,7 @@ public class User implements UserDetails {
     private Double pricePerKwh;
 
     @Column(name = "provider_name")
+    @Convert(converter = EncryptedStringConverter.class)
     private String providerName;
 
     public User() {}
@@ -63,6 +74,12 @@ public class User implements UserDetails {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public String getUsernameHash() { return usernameHash; }
+    public void setUsernameHash(String usernameHash) { this.usernameHash = usernameHash; }
+
+    public String getEmailHash() { return emailHash; }
+    public void setEmailHash(String emailHash) { this.emailHash = emailHash; }
 
     @Override
     public String getPassword() { return password; }

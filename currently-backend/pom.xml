@@ -1,6 +1,6 @@
 <!--
  * File: pom.xml
- * Description: Maven configuration for Currently backend with Spring Boot, Security, JPA, JWT, and SQLite support.
+ * Description: Maven configuration for Currently backend with Spring Boot, Security, JPA, JWT, and PostgreSQL support.
  * Author: Liam Connell
  * Date: 2025-11-10
 -->
@@ -37,14 +37,6 @@
         </dependency>
 
 
-        <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-community-dialects</artifactId>
-            <version>6.5.2.Final</version>
-        </dependency>
-
-
-
         <!-- Spring Security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -57,11 +49,11 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- SQLite JDBC Driver -->
+        <!-- PostgreSQL JDBC Driver -->
         <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
-            <version>3.45.3.0</version>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.4</version>
         </dependency>
 
         <!-- JWT (JSON Web Token) -->

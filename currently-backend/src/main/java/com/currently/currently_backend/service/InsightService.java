@@ -11,6 +11,7 @@ import com.currently.currently_backend.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -42,6 +43,7 @@ public class InsightService {
     private final UserRepository userRepository;
     private final UserApplianceRepository userApplianceRepository;
     private final ApplianceService applianceService;
+    private final UserLookupHashService userLookupHashService;
 
     // this in-memory run store keeps generate/more simple now, then we can swap this for postgres later
     private final Map<String, InsightRunState> runStore = new ConcurrentHashMap<>();
@@ -49,13 +51,16 @@ public class InsightService {
     public InsightService(
             UserRepository userRepository,
             UserApplianceRepository userApplianceRepository,
-            ApplianceService applianceService
+            ApplianceService applianceService,
+            UserLookupHashService userLookupHashService
     ) {
         this.userRepository = userRepository;
         this.userApplianceRepository = userApplianceRepository;
         this.applianceService = applianceService;
+        this.userLookupHashService = userLookupHashService;
     }
 
+    @Transactional(readOnly = true)
     public InsightGenerateResponse generateInsights(InsightGenerateRequest request) {
         cleanupExpiredRuns();
 
@@ -450,7 +455,8 @@ public class InsightService {
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String emailOrUsername = auth.getName();
-        return userRepository.findByEmail(emailOrUsername)
+        return userRepository.findByEmailHash(userLookupHashService.emailHash(emailOrUsername))
+                
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
     }
 
@@ -536,3 +542,4 @@ public class InsightService {
             double feasibilityScore
     ) {}
 }
+

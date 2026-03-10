@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,23 +19,34 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
+    private final UserLookupHashService userLookupHashService;
 
-    public RoomService(RoomRepository roomRepository, UserRepository userRepository) {
+    public RoomService(
+            RoomRepository roomRepository,
+            UserRepository userRepository,
+            UserLookupHashService userLookupHashService
+    ) {
         this.roomRepository = roomRepository;
         this.userRepository = userRepository;
+        this.userLookupHashService = userLookupHashService;
     }
 
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String emailOrUsername = auth.getName();
-        return userRepository.findByEmail(emailOrUsername)
+        return userRepository.findByEmailHash(userLookupHashService.emailHash(emailOrUsername))
+                
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
     }
 
     public List<RoomResponse> getRoomsForCurrentUser() {
         User user = getCurrentUser();
-        List<Room> rooms = roomRepository.findByUserOrderByFloorLabelAscNameAsc(user);
-        return rooms.stream().map(this::toResponse).collect(Collectors.toList());
+        List<Room> rooms = roomRepository.findByUser(user);
+        return rooms.stream()
+                .sorted(Comparator.comparing(Room::getFloorLabel, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Room::getName, String.CASE_INSENSITIVE_ORDER))
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     public RoomResponse createRoom(RoomRequest request) {
@@ -97,3 +109,4 @@ public class RoomService {
         return res;
     }
 }
+

@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
@@ -38,25 +39,28 @@ import java.util.stream.Collectors;
 public class UserApplianceService {
 
 
-    // Example tariff: €0.30 per kWh (you can move this to config later)
+    // Example tariff: â‚¬0.30 per kWh (you can move this to config later)
     private static final double DEFAULT_PRICE_PER_KWH = 0.30;
 
     private final UserRepository userRepository;
     private final UserApplianceRepository userApplianceRepository;
     private final ApplianceService applianceService;
     private final RoomRepository roomRepository;
+    private final UserLookupHashService userLookupHashService;
 
 
     public UserApplianceService(
             UserRepository userRepository,
             UserApplianceRepository userApplianceRepository,
             ApplianceService applianceService,
-            RoomRepository roomRepository
+            RoomRepository roomRepository,
+            UserLookupHashService userLookupHashService
     ) {
         this.userRepository = userRepository;
         this.userApplianceRepository = userApplianceRepository;
         this.applianceService = applianceService;
         this.roomRepository = roomRepository;
+        this.userLookupHashService = userLookupHashService;
     }
 
 
@@ -70,7 +74,8 @@ public class UserApplianceService {
         String emailOrUsername = auth.getName();
 
         // Adjust this if your login uses username instead of email.
-        return userRepository.findByEmail(emailOrUsername)
+        return userRepository.findByEmailHash(userLookupHashService.emailHash(emailOrUsername))
+                
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
     }
 
@@ -78,6 +83,7 @@ public class UserApplianceService {
     // Purpose: Return all UserAppliance entries for the current user with derived metrics.
     // Inputs: none
     // Outputs: List of UserApplianceResponse DTOs
+    @Transactional(readOnly = true)
     public List<UserApplianceResponse> getUserAppliances() {
         User user = getCurrentUser();
         double pricePerKwh = resolvePricePerKwh(user);
@@ -92,6 +98,7 @@ public class UserApplianceService {
     // Purpose: Create a new UserAppliance for the current user after validating input.
     // Inputs: UserApplianceRequest DTO
     // Outputs: UserApplianceResponse DTO with derived metrics
+    @Transactional
     public UserApplianceResponse createUserAppliance(UserApplianceRequest request) {
         User user = getCurrentUser();
 
@@ -136,6 +143,7 @@ public class UserApplianceService {
     // Purpose: Update an existing UserAppliance's usage values and custom name.
     // Inputs: id (Long), request DTO
     // Outputs: Updated UserApplianceResponse
+    @Transactional
     public UserApplianceResponse updateUserAppliance(Long id, UserApplianceRequest request) {
         User user = getCurrentUser();
 
@@ -191,6 +199,7 @@ public class UserApplianceService {
     // Purpose: Remove a UserAppliance belonging to the current user.
     // Inputs: id (Long)
     // Outputs: void (throws if not found or not owned)
+    @Transactional
     public void deleteUserAppliance(Long id) {
         User user = getCurrentUser();
 
@@ -302,3 +311,4 @@ public class UserApplianceService {
         return 0.0;
     }
 }
+

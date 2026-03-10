@@ -8,6 +8,7 @@
 
 package com.currently.currently_backend.model;
 
+import com.currently.currently_backend.persistence.EncryptedStringConverter;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
  * 
  * ref. SEAI Typical Appliance Energy Usage
  * Manufacturer specifications avg across 3 models where available
- * Energy Saving Trust (UK – widely accepted academically)
+ * Energy Saving Trust (UK â€“ widely accepted academically)
  */
 @Entity
 @Table(name = "user_appliances")
@@ -39,14 +40,16 @@ public class UserAppliance {
     private Room room;
 
     // We reference the base appliance by name as a key into appliances.json
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "appliance_name", nullable = false)
     private String applianceName;
 
     // Optional user-friendly name e.g. "Kitchen Fridge", "Liam's Xbox"
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "custom_name")
     private String customName;
 
-    // Either "continuous" or "perUse" – must match appliances.json usageType
+    // Either "continuous" or "perUse" â€“ must match appliances.json usageType
     @Column(name = "usage_type", nullable = false)
     private String usageType;
 

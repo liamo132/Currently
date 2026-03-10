@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -22,21 +23,34 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final UserLookupHashService userLookupHashService;
 
     @Autowired
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
                        @Lazy AuthenticationManager authenticationManager,
-                       JwtUtil jwtUtil) {
+                       JwtUtil jwtUtil,
+                       UserLookupHashService userLookupHashService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.userLookupHashService = userLookupHashService;
     }
 
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return userRepository.findByEmail(email)
+        String emailHash = userLookupHashService.emailHash(email);
+        return userRepository.findByEmailHash(emailHash)
+                
+                .map(user -> {
+                    if (user.getEmailHash() == null || user.getUsernameHash() == null) {
+                        refreshUserHashes(user);
+                        userRepository.save(user);
+                    }
+                    return user;
+                })
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 
@@ -59,14 +73,15 @@ public class UserService implements UserDetailsService {
             return "Error: Password is required.";
         }
 
-        if (userRepository.existsByEmail(user.getEmail())) {
+        if (userRepository.existsByEmailHash(userLookupHashService.emailHash(user.getEmail()))) {
             return "Error: Email already in use.";
         }
 
-        if (userRepository.existsByUsername(user.getUsernameField())) {
+        if (userRepository.existsByUsernameHash(userLookupHashService.usernameHash(user.getUsernameField()))) {
             return "Error: Username already in use.";
         }
 
+        refreshUserHashes(user);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
 
@@ -84,7 +99,7 @@ public class UserService implements UserDetailsService {
             );
 
             if (auth.isAuthenticated()) {
-                return jwtUtil.generateToken(email);
+                return jwtUtil.generateToken(auth.getName());
             } else {
                 return "Error: Invalid credentials.";
             }
@@ -92,4 +107,10 @@ public class UserService implements UserDetailsService {
             return "Error: Invalid email or password.";
         }
     }
+
+    private void refreshUserHashes(User user) {
+        user.setEmailHash(userLookupHashService.emailHash(user.getEmail()));
+        user.setUsernameHash(userLookupHashService.usernameHash(user.getUsernameField()));
+    }
 }
+

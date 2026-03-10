@@ -14,15 +14,18 @@ public class UserEnergySettingsService {
     private static final double DEFAULT_PRICE_PER_KWH = 0.30;
 
     private final UserRepository userRepository;
+    private final UserLookupHashService userLookupHashService;
 
-    public UserEnergySettingsService(UserRepository userRepository) {
+    public UserEnergySettingsService(UserRepository userRepository, UserLookupHashService userLookupHashService) {
         this.userRepository = userRepository;
+        this.userLookupHashService = userLookupHashService;
     }
 
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String emailOrUsername = auth.getName();
-        return userRepository.findByEmail(emailOrUsername)
+        return userRepository.findByEmailHash(userLookupHashService.emailHash(emailOrUsername))
+                
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
     }
 
@@ -50,3 +53,4 @@ public class UserEnergySettingsService {
         return new EnergySettingsResponse(saved.getPricePerKwh(), saved.getProviderName());
     }
 }
+

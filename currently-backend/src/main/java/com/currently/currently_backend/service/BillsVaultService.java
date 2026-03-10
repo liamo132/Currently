@@ -21,13 +21,16 @@ public class BillsVaultService {
     private final UserRepository userRepository;
     private final BillFileRepository billFileRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserLookupHashService userLookupHashService;
 
     public BillsVaultService(UserRepository userRepository,
                              BillFileRepository billFileRepository,
-                             PasswordEncoder passwordEncoder) {
+                             PasswordEncoder passwordEncoder,
+                             UserLookupHashService userLookupHashService) {
         this.userRepository = userRepository;
         this.billFileRepository = billFileRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userLookupHashService = userLookupHashService;
     }
 
     // Helper: current user from JWT (your JWT sets auth name to email)
@@ -35,12 +38,13 @@ public class BillsVaultService {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (principal instanceof User) {
-            return (User) principal;  // ✅ Direct access, no DB query
+            return (User) principal;  // âœ… Direct access, no DB query
         }
 
         // Fallback (shouldn't happen with fix above)
         String email = principal.toString();
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmailHash(userLookupHashService.emailHash(email))
+                
                 .orElseThrow(() -> new RuntimeException("User not found for email: " + email));
     }
 
@@ -93,7 +97,7 @@ public class BillsVaultService {
         String contentType = file.getContentType() == null ? "" : file.getContentType();
         String filename = file.getOriginalFilename() == null ? "bill.pdf" : file.getOriginalFilename();
 
-        // “Student security”: enforce PDFs only
+        // â€œStudent securityâ€: enforce PDFs only
         if (!contentType.equalsIgnoreCase("application/pdf") && !filename.toLowerCase().endsWith(".pdf")) {
             throw new IllegalArgumentException("Only PDF files are allowed.");
         }
@@ -169,3 +173,4 @@ public class BillsVaultService {
         return HexFormat.of().formatHex(digest);
     }
 }
+
