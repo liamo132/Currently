@@ -11,18 +11,21 @@ export default function QuickActions({
       <div className="card-header">
         <h2 className="card-title">Quick Actions</h2>
       </div>
-      <div className="quick-actions-grid">
-        <button type="button" className="action-btn" onClick={onAppliances}>
-          Add Appliances
+      <p className="card-subtitle">Do one thing now: generate focused savings actions.</p>
+
+      <button type="button" className="btn btn--primary quick-actions__primary" onClick={onInsights}>
+        Get Smart Insights
+      </button>
+
+      <div className="quick-actions-list">
+        <button type="button" className="btn btn--secondary" onClick={onAppliances}>
+          Add appliances
         </button>
-        <button type="button" className="action-btn" onClick={onMap}>
-          Map Rooms or Floors
+        <button type="button" className="btn btn--secondary" onClick={onMap}>
+          Map rooms or floors
         </button>
-        <button type="button" className="action-btn" onClick={onVault}>
-          Add Bills to Vault
-        </button>
-        <button type="button" className="action-btn" onClick={onInsights}>
-          Get Smart Insights
+        <button type="button" className="btn btn--tertiary" onClick={onVault}>
+          Manage bills vault
         </button>
       </div>
     </section>

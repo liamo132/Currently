@@ -9,6 +9,7 @@ import QuickActions from './quickactions';
 import SystemStatus from './systemstatus';
 import WeeklyCostHero from './weeklycosthero';
 import { getEnergySettings, saveEnergySettings } from '../../api/energy';
+import '../shared/private-layout.css';
 
 import './css/dashboard.css';
 
@@ -199,6 +200,67 @@ export default function Dashboard() {
     return w;
   }, [pricePerKwh, roomsCount, appliancesCount]);
 
+  const setupItems = useMemo(
+    () => [
+      { id: 'price', complete: Number(pricePerKwh) > 0 },
+      { id: 'rooms', complete: roomsCount > 0 },
+      { id: 'appliances', complete: appliancesCount > 0 },
+      { id: 'vault', complete: vaultActive },
+    ],
+    [pricePerKwh, roomsCount, appliancesCount, vaultActive]
+  );
+
+  const completenessPct = useMemo(() => {
+    const done = setupItems.filter((item) => item.complete).length;
+    return Math.round((done / setupItems.length) * 100);
+  }, [setupItems]);
+
+  const missingItems = useMemo(() => {
+    const items = [];
+    if (Number(pricePerKwh) <= 0) {
+      items.push({
+        id: 'price',
+        label: 'Set your kWh price to unlock accurate cost tracking.',
+        actionLabel: 'Set price',
+        onClick: () => scrollTo(energyRef),
+      });
+    }
+    if (roomsCount === 0) {
+      items.push({
+        id: 'rooms',
+        label: 'Map at least one room so insights can be room-specific.',
+        actionLabel: 'Map rooms',
+        onClick: () => navigate('/mapmyhouse'),
+      });
+    }
+    if (appliancesCount === 0) {
+      items.push({
+        id: 'appliances',
+        label: 'Add appliances so weekly estimates are based on real usage.',
+        actionLabel: 'Add appliances',
+        onClick: () => navigate('/my-appliances'),
+      });
+    }
+    return items.slice(0, 2);
+  }, [pricePerKwh, roomsCount, appliancesCount, navigate]);
+
+  const highestCostHint = useMemo(() => {
+    if (!Array.isArray(appliances) || appliances.length === 0 || Number(pricePerKwh) <= 0) return null;
+
+    const withCost = appliances
+      .map((a) => {
+        const weeklyCost = (Number(a?.dailyKWh || 0) * Number(pricePerKwh || 0)) * 7;
+        return {
+          name: a?.customName || a?.applianceName || 'Appliance',
+          weeklyCost,
+        };
+      })
+      .filter((a) => a.weeklyCost > 0)
+      .sort((a, b) => b.weeklyCost - a.weeklyCost);
+
+    return withCost[0] || null;
+  }, [appliances, pricePerKwh]);
+
   const scrollTo = (ref) => {
     if (!ref?.current) return;
     ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -206,25 +268,27 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="dashboard-container">
+      <div className="dashboard-container private-page">
         <HeaderUser activePage="dashboard" />
-        <div className="dashboard-content">
-          <h1 className="dashboard-title">Dashboard</h1>
-          <p className="dashboard-subtitle">Loading dashboard...</p>
+        <div className="dashboard-content private-content">
+          <h1 className="dashboard-title private-title">Dashboard</h1>
+          <p className="dashboard-subtitle private-subtitle">Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container private-page">
       <HeaderUser activePage="dashboard" />
 
-      <div className="dashboard-content">
-        <h1 className="dashboard-title">Dashboard</h1>
-        <p className="dashboard-subtitle">Your account, energy settings, and home overview in one place.</p>
+      <div className="dashboard-content private-content">
+        <h1 className="dashboard-title private-title">Dashboard</h1>
+        <p className="dashboard-subtitle private-subtitle">Your account, energy settings, and home overview in one place.</p>
 
         {error && <div className="myappliances-error">{error}</div>}
+
+        <WeeklyCostHero weeklyCost={costs.weekly} />
 
         <div className="dashboard-grid">
           {/* LEFT COLUMN */}
@@ -245,14 +309,15 @@ export default function Dashboard() {
                 roomsCount={roomsCount}
                 appliancesCount={appliancesCount}
                 floorsCount={floorsCount}
+                completenessPct={completenessPct}
+                missingItems={missingItems}
+                highestCostHint={highestCostHint}
               />
             </div>
           </div>
 
           {/* RIGHT COLUMN */}
           <div className="dashboard-right">
-            <WeeklyCostHero weeklyCost={costs.weekly} />
-
             <QuickActions
               onVault={() => navigate('/watchyourwatts')}
               onMap={() => navigate('/mapmyhouse')}

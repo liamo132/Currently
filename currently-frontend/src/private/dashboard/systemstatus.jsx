@@ -18,20 +18,20 @@ export default function SystemStatus({ lastSync, warnings = [], vaultActive, onV
         </div>
       </div>
 
-      <div className="status-indicator" style={{ marginTop: '0.85rem' }}>
+      <div className="status-indicator">
         <div className="status-dot" aria-hidden style={{ background: vaultActive ? '#10b981' : '#f59e0b' }} />
         <div className="status-text">
           <div className="status-label">Bills Vault</div>
           <div className="status-time">{vaultLabel}</div>
         </div>
-        <button type="button" className="status-action" onClick={onVault}>
+        <button type="button" className="btn btn--tertiary" onClick={onVault}>
           Manage
         </button>
       </div>
 
       {warnings.length > 0 && (
         <div className="system-status__warnings">
-          <h3>Warnings</h3>
+          <h3>Setup notes</h3>
           <ul>
             {warnings.map((w, i) => (
               <li key={`${w}-${i}`}>{w}</li>

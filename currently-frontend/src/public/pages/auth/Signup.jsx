@@ -3,7 +3,7 @@
  * Description: Registration page for creating new Currently accounts.
  */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./auth.css";
 import { register } from "../../../api/auth";
@@ -20,6 +20,16 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const emailFromQuery = params.get("email")?.trim();
+
+    if (!emailFromQuery) return;
+    if (!/^\S+@\S+\.\S+$/.test(emailFromQuery)) return;
+
+    setFormData((prev) => ({ ...prev, email: emailFromQuery }));
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
