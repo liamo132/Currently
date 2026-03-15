@@ -3,6 +3,7 @@ package com.currently.currently_backend.controller;
 import com.currently.currently_backend.dto.EnergySettingsRequest;
 import com.currently.currently_backend.dto.EnergySettingsResponse;
 import com.currently.currently_backend.service.UserEnergySettingsService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +24,7 @@ public class EnergySettingsController {
     }
 
     @PutMapping
-    public ResponseEntity<EnergySettingsResponse> saveSettings(@RequestBody EnergySettingsRequest request) {
+    public ResponseEntity<EnergySettingsResponse> saveSettings(@Valid @RequestBody EnergySettingsRequest request) {
         EnergySettingsResponse res = service.saveSettings(request);
         return ResponseEntity.ok(res);
     }

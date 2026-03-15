@@ -10,6 +10,7 @@ This backend has been switched from SQLite to PostgreSQL with security-focused d
 - `POSTGRES_SSLMODE` (optional): `disable` for local dev, `verify-full` for production
 - `JWT_SECRET` (recommended in all environments, required in production): Base64-encoded 32+ byte key
 - `JWT_EXPIRATION_MS` (optional): defaults to `3600000` (1 hour)
+- `APP_CORS_ALLOWED_ORIGINS` (optional): comma-separated frontend origin allowlist
 - `APP_DATA_ENCRYPTION_KEY` (required): Base64 32-byte key for AES-GCM field encryption
 - `APP_DATA_HASH_KEY` (required): Base64 32+ byte key for HMAC lookups (`email_hash`, `username_hash`)
 - `RATE_LIMIT_MAX_REQUESTS` (optional): default `30` requests
@@ -59,3 +60,8 @@ When using `SPRING_PROFILES_ACTIVE=prod`, startup fails if `JWT_SECRET` is missi
 - Passwords and vault PINs: BCrypt hash (one-way)
 - Encrypted at rest (AES-GCM via JPA converter): user username/name/email/provider, room labels, user appliance names
 - Login/lookup safety: email and username matched by keyed HMAC hash columns (`email_hash`, `username_hash`)
+
+## Security docs
+
+- Error contract for frontend/backend handling: `ERROR_CONTRACT.md`
+- Implemented controls and known limitations: `SECURITY_NOTES.md`

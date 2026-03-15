@@ -6,6 +6,7 @@ import com.currently.currently_backend.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -57,30 +58,35 @@ public class UserService implements UserDetailsService {
     public String registerUser(User user) {
 
         if (user == null) {
-            return "Error: Missing request body.";
+            throw new IllegalArgumentException("Missing request body.");
         }
 
         if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
-            return "Error: Email is required.";
+            throw new IllegalArgumentException("Email is required.");
         }
 
         // IMPORTANT: this is the handle field, not Spring Security getUsername()
         if (user.getUsernameField() == null || user.getUsernameField().trim().isEmpty()) {
-            return "Error: Username is required.";
+            throw new IllegalArgumentException("Username is required.");
         }
 
         if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
-            return "Error: Password is required.";
+            throw new IllegalArgumentException("Password is required.");
         }
 
-        if (userRepository.existsByEmailHash(userLookupHashService.emailHash(user.getEmail()))) {
-            return "Error: Email already in use.";
+        String trimmedEmail = user.getEmail().trim();
+        String trimmedUsername = user.getUsernameField().trim();
+
+        if (userRepository.existsByEmailHash(userLookupHashService.emailHash(trimmedEmail))) {
+            throw new IllegalArgumentException("Email already in use.");
         }
 
-        if (userRepository.existsByUsernameHash(userLookupHashService.usernameHash(user.getUsernameField()))) {
-            return "Error: Username already in use.";
+        if (userRepository.existsByUsernameHash(userLookupHashService.usernameHash(trimmedUsername))) {
+            throw new IllegalArgumentException("Username already in use.");
         }
 
+        user.setEmail(trimmedEmail);
+        user.setUsername(trimmedUsername);
         refreshUserHashes(user);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
@@ -90,21 +96,20 @@ public class UserService implements UserDetailsService {
 
     public String loginUser(String email, String password) {
         if (email == null || email.trim().isEmpty() || password == null || password.trim().isEmpty()) {
-            return "Error: Email and password are required.";
+            throw new IllegalArgumentException("Email and password are required.");
         }
 
         try {
             Authentication auth = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, password)
+                    new UsernamePasswordAuthenticationToken(email.trim(), password)
             );
 
             if (auth.isAuthenticated()) {
                 return jwtUtil.generateToken(auth.getName());
-            } else {
-                return "Error: Invalid credentials.";
             }
+            throw new BadCredentialsException("Invalid credentials.");
         } catch (AuthenticationException e) {
-            return "Error: Invalid email or password.";
+            throw new BadCredentialsException("Invalid email or password.");
         }
     }
 

@@ -4,6 +4,7 @@ import com.currently.currently_backend.dto.BillFileResponse;
 import com.currently.currently_backend.dto.VaultPinRequest;
 import com.currently.currently_backend.model.BillFile;
 import com.currently.currently_backend.service.BillsVaultService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,14 +37,14 @@ public class BillsVaultController {
 
     // Set PIN (first time only)
     @PostMapping("/pin")
-    public ResponseEntity<?> setPin(@RequestBody VaultPinRequest req) {
+    public ResponseEntity<?> setPin(@Valid @RequestBody VaultPinRequest req) {
         vaultService.setPinFirstTime(req.getPin());
         return ResponseEntity.ok(Map.of("message", "PIN set successfully."));
     }
 
     // Verify PIN (optional endpoint for "unlock" button)
     @PostMapping("/unlock")
-    public ResponseEntity<?> unlock(@RequestBody VaultPinRequest req) {
+    public ResponseEntity<?> unlock(@Valid @RequestBody VaultPinRequest req) {
         vaultService.verifyPinOrThrow(req.getPin());
         return ResponseEntity.ok(Map.of("unlocked", true));
     }
@@ -59,13 +60,13 @@ public class BillsVaultController {
 
     // List files
     @PostMapping("/files/list")
-    public ResponseEntity<List<BillFileResponse>> list(@RequestBody VaultPinRequest req) {
+    public ResponseEntity<List<BillFileResponse>> list(@Valid @RequestBody VaultPinRequest req) {
         return ResponseEntity.ok(vaultService.listFiles(req.getPin()));
     }
 
     // Download file
     @PostMapping("/files/{id}/download")
-    public ResponseEntity<byte[]> download(@PathVariable Long id, @RequestBody VaultPinRequest req) {
+    public ResponseEntity<byte[]> download(@PathVariable Long id, @Valid @RequestBody VaultPinRequest req) {
         BillFile bf = vaultService.getFileForDownload(req.getPin(), id);
 
         return ResponseEntity.ok()

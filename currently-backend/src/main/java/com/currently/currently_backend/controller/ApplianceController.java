@@ -20,7 +20,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/appliances")
-@CrossOrigin(origins = "*")
 public class ApplianceController {
 
     private final ApplianceService applianceService;

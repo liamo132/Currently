@@ -11,6 +11,7 @@ package com.currently.currently_backend.controller;
 import com.currently.currently_backend.dto.UserApplianceRequest;
 import com.currently.currently_backend.dto.UserApplianceResponse;
 import com.currently.currently_backend.service.UserApplianceService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,7 +44,7 @@ public class UserApplianceController {
     // Purpose: Create a new user appliance entry.
     @PostMapping
     public ResponseEntity<UserApplianceResponse> createMyAppliance(
-            @RequestBody UserApplianceRequest request
+            @Valid @RequestBody UserApplianceRequest request
     ) {
         UserApplianceResponse created = userApplianceService.createUserAppliance(request);
         return ResponseEntity.ok(created);
@@ -54,7 +55,7 @@ public class UserApplianceController {
     @PutMapping("/{id}")
     public ResponseEntity<UserApplianceResponse> updateMyAppliance(
             @PathVariable Long id,
-            @RequestBody UserApplianceRequest request
+            @Valid @RequestBody UserApplianceRequest request
     ) {
         UserApplianceResponse updated = userApplianceService.updateUserAppliance(id, request);
         return ResponseEntity.ok(updated);

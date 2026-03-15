@@ -101,10 +101,21 @@ public class UserApplianceService {
     @Transactional
     public UserApplianceResponse createUserAppliance(UserApplianceRequest request) {
         User user = getCurrentUser();
+        if (request == null) {
+            throw new IllegalArgumentException("User appliance request is required.");
+        }
+        if (request.getApplianceName() == null || request.getApplianceName().trim().isEmpty()) {
+            throw new IllegalArgumentException("applianceName is required.");
+        }
+        if (request.getUsageType() == null || request.getUsageType().trim().isEmpty()) {
+            throw new IllegalArgumentException("usageType is required.");
+        }
 
-        Appliance baseAppliance = findBaseApplianceOrThrow(request.getApplianceName());
+        String applianceName = request.getApplianceName().trim();
+        String usageType = request.getUsageType().trim();
+        Appliance baseAppliance = findBaseApplianceOrThrow(applianceName);
 
-        if (!baseAppliance.getUsageType().equalsIgnoreCase(request.getUsageType())) {
+        if (!baseAppliance.getUsageType().equalsIgnoreCase(usageType)) {
             throw new IllegalArgumentException("Usage type does not match base appliance configuration.");
         }
 
@@ -112,9 +123,9 @@ public class UserApplianceService {
 
         UserAppliance entity = new UserAppliance();
         entity.setUser(user);
-        entity.setApplianceName(request.getApplianceName());
-        entity.setCustomName(request.getCustomName());
-        entity.setUsageType(request.getUsageType());
+        entity.setApplianceName(applianceName);
+        entity.setCustomName(normalizeNullableText(request.getCustomName()));
+        entity.setUsageType(usageType);
         entity.setHoursPerDay(request.getHoursPerDay());
         entity.setUsesPerDay(request.getUsesPerDay());
 
@@ -146,6 +157,9 @@ public class UserApplianceService {
     @Transactional
     public UserApplianceResponse updateUserAppliance(Long id, UserApplianceRequest request) {
         User user = getCurrentUser();
+        if (request == null) {
+            throw new IllegalArgumentException("User appliance request is required.");
+        }
 
         UserAppliance entity = userApplianceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User appliance not found."));
@@ -158,7 +172,7 @@ public class UserApplianceService {
         // Usage type and appliance name are immutable here to keep things simple.
         // You can relax this later if needed.
         if (request.getCustomName() != null) {
-            entity.setCustomName(request.getCustomName());
+            entity.setCustomName(normalizeNullableText(request.getCustomName()));
         }
 
         if (request.getHoursPerDay() != null) {
@@ -280,6 +294,14 @@ public class UserApplianceService {
         }
 
         return response;
+    }
+
+    private String normalizeNullableText(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
     }
 
     private double resolvePricePerKwh(User user) {

@@ -38,6 +38,9 @@ public class UserEnergySettingsService {
 
     public EnergySettingsResponse saveSettings(EnergySettingsRequest request) {
         User user = getCurrentUser();
+        if (request == null) {
+            throw new IllegalArgumentException("Energy settings request is required.");
+        }
 
         if (request.getPricePerKwh() != null) {
             user.setPricePerKwh(request.getPricePerKwh());
@@ -46,7 +49,8 @@ public class UserEnergySettingsService {
         }
 
         if (request.getProviderName() != null) {
-            user.setProviderName(request.getProviderName());
+            String provider = request.getProviderName().trim();
+            user.setProviderName(provider.isEmpty() ? null : provider);
         }
 
         User saved = userRepository.save(user);

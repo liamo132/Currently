@@ -3,6 +3,7 @@ package com.currently.currently_backend.controller;
 import com.currently.currently_backend.dto.RoomRequest;
 import com.currently.currently_backend.dto.RoomResponse;
 import com.currently.currently_backend.service.RoomService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,14 +25,14 @@ public class RoomController {
     }
 
     @PostMapping
-    public ResponseEntity<RoomResponse> createRoom(@RequestBody RoomRequest request) {
+    public ResponseEntity<RoomResponse> createRoom(@Valid @RequestBody RoomRequest request) {
         return ResponseEntity.ok(roomService.createRoom(request));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<RoomResponse> updateRoom(
             @PathVariable Long id,
-            @RequestBody RoomRequest request
+            @Valid @RequestBody RoomRequest request
     ) {
         return ResponseEntity.ok(roomService.updateRoom(id, request));
     }

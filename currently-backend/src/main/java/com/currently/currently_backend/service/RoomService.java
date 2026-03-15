@@ -51,12 +51,21 @@ public class RoomService {
 
     public RoomResponse createRoom(RoomRequest request) {
         User user = getCurrentUser();
+        if (request == null) {
+            throw new IllegalArgumentException("Room request is required.");
+        }
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Room name is required.");
+        }
+        if (request.getFloorLabel() == null || request.getFloorLabel().trim().isEmpty()) {
+            throw new IllegalArgumentException("Floor label is required.");
+        }
 
         Room room = new Room(
                 user,
-                request.getName(),
-                request.getFloorLabel(),
-                request.getType()
+                request.getName().trim(),
+                request.getFloorLabel().trim(),
+                request.getType() != null && !request.getType().trim().isEmpty() ? request.getType().trim() : null
         );
 
         Room saved = roomRepository.save(room);
@@ -65,6 +74,9 @@ public class RoomService {
 
     public RoomResponse updateRoom(Long id, RoomRequest request) {
         User user = getCurrentUser();
+        if (request == null) {
+            throw new IllegalArgumentException("Room request is required.");
+        }
 
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Room not found"));
@@ -74,13 +86,22 @@ public class RoomService {
         }
 
         if (request.getName() != null) {
-            room.setName(request.getName());
+            String name = request.getName().trim();
+            if (name.isEmpty()) {
+                throw new IllegalArgumentException("Room name cannot be blank.");
+            }
+            room.setName(name);
         }
         if (request.getFloorLabel() != null) {
-            room.setFloorLabel(request.getFloorLabel());
+            String floorLabel = request.getFloorLabel().trim();
+            if (floorLabel.isEmpty()) {
+                throw new IllegalArgumentException("Floor label cannot be blank.");
+            }
+            room.setFloorLabel(floorLabel);
         }
         if (request.getType() != null) {
-            room.setType(request.getType());
+            String type = request.getType().trim();
+            room.setType(type.isEmpty() ? null : type);
         }
 
         Room updated = roomRepository.save(room);

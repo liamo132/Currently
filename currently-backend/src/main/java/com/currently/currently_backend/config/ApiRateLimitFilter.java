@@ -1,5 +1,7 @@
 package com.currently.currently_backend.config;
 
+import com.currently.currently_backend.exception.ApiErrorResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -22,13 +25,16 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
     private final Map<String, Deque<Long>> requestBuckets = new ConcurrentHashMap<>();
     private final int maxRequests;
     private final long windowMillis;
+    private final ObjectMapper objectMapper;
 
     public ApiRateLimitFilter(
             @Value("${security.rate-limit.max-requests:30}") int maxRequests,
-            @Value("${security.rate-limit.window-seconds:60}") int windowSeconds
+            @Value("${security.rate-limit.window-seconds:60}") int windowSeconds,
+            ObjectMapper objectMapper
     ) {
         this.maxRequests = maxRequests;
         this.windowMillis = Duration.ofSeconds(windowSeconds).toMillis();
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -57,7 +63,14 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
             if (bucket.size() >= maxRequests) {
                 response.setStatus(429);
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                response.getWriter().write("{\"error\":\"Too many requests. Try again shortly.\"}");
+                ApiErrorResponse error = new ApiErrorResponse(
+                        "RATE_LIMITED",
+                        "Too many requests. Try again shortly.",
+                        null,
+                        Instant.now(),
+                        request.getRequestURI()
+                );
+                response.getWriter().write(objectMapper.writeValueAsString(error));
                 return;
             }
 
