@@ -8,6 +8,7 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 class CurrentlyBackendApplicationTests {
 
+	// Verifies the Spring application context boots successfully with the test profile.
 	@Test
 	void contextLoads() {
 	}
