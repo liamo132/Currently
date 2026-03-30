@@ -1,0 +1,8 @@
+2026-03-30 18:13:01.181 INFO  event=login_success method=POST path=/api/auth/login ip=0:0:0:0:0:0:0:1 principal=test@tester.ie
+2026-03-30 18:13:17.740 INFO  event=vault_pin_set method=POST path=/api/vault/pin ip=0:0:0:0:0:0:0:1 userId=1 status=created
+2026-03-30 18:13:17.962 INFO  event=vault_pin_success method=POST path=/api/vault/files/list ip=0:0:0:0:0:0:0:1 userId=1 action=verify
+2026-03-30 18:13:17.962 INFO  event=vault_file_list method=POST path=/api/vault/files/list ip=0:0:0:0:0:0:0:1 userId=1 status=ok
+2026-03-30 18:13:26.929 INFO  event=vault_pin_success method=POST path=/api/vault/files ip=0:0:0:0:0:0:0:1 userId=1 action=verify
+2026-03-30 18:13:27.129 INFO  event=vault_file_upload method=POST path=/api/vault/files ip=0:0:0:0:0:0:0:1 userId=1 fileId=1 filename=lukebanahan.pdf size=3321289
+2026-03-30 18:13:27.356 INFO  event=vault_pin_success method=POST path=/api/vault/files/list ip=0:0:0:0:0:0:0:1 userId=1 action=verify
+2026-03-30 18:13:27.356 INFO  event=vault_file_list method=POST path=/api/vault/files/list ip=0:0:0:0:0:0:0:1 userId=1 status=ok

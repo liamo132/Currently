@@ -25,18 +25,24 @@ public class UserService implements UserDetailsService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final UserLookupHashService userLookupHashService;
+    private final SecurityAuditService securityAuditService;
+    private final SecurityLockoutService securityLockoutService;
 
     @Autowired
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
                        @Lazy AuthenticationManager authenticationManager,
                        JwtUtil jwtUtil,
-                       UserLookupHashService userLookupHashService) {
+                       UserLookupHashService userLookupHashService,
+                       SecurityAuditService securityAuditService,
+                       SecurityLockoutService securityLockoutService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.userLookupHashService = userLookupHashService;
+        this.securityAuditService = securityAuditService;
+        this.securityLockoutService = securityLockoutService;
     }
 
     @Override
@@ -90,6 +96,7 @@ public class UserService implements UserDetailsService {
         refreshUserHashes(user);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
+        securityAuditService.logRegistrationSuccess(trimmedEmail);
 
         return jwtUtil.generateToken(user.getEmail());
     }
@@ -99,16 +106,23 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("Email and password are required.");
         }
 
+        String normalizedEmail = email.trim().toLowerCase();
+        securityLockoutService.assertLoginAllowed(normalizedEmail);
+
         try {
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email.trim(), password)
             );
 
             if (auth.isAuthenticated()) {
+                securityLockoutService.recordLoginSuccess(normalizedEmail);
+                securityAuditService.logLoginSuccess(normalizedEmail);
                 return jwtUtil.generateToken(auth.getName());
             }
             throw new BadCredentialsException("Invalid credentials.");
         } catch (AuthenticationException e) {
+            securityLockoutService.recordLoginFailure(normalizedEmail);
+            securityAuditService.logLoginFailure(normalizedEmail, "invalid_credentials");
             throw new BadCredentialsException("Invalid email or password.");
         }
     }

@@ -26,14 +26,17 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
     private final int maxRequests;
     private final long windowMillis;
     private final ObjectMapper objectMapper;
+    private final boolean trustForwardHeaders;
 
     public ApiRateLimitFilter(
             @Value("${security.rate-limit.max-requests:30}") int maxRequests,
             @Value("${security.rate-limit.window-seconds:60}") int windowSeconds,
+            @Value("${security.rate-limit.trust-forward-headers:false}") boolean trustForwardHeaders,
             ObjectMapper objectMapper
     ) {
         this.maxRequests = maxRequests;
         this.windowMillis = Duration.ofSeconds(windowSeconds).toMillis();
+        this.trustForwardHeaders = trustForwardHeaders;
         this.objectMapper = objectMapper;
     }
 
@@ -81,6 +84,10 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
     }
 
     private String extractClientIp(HttpServletRequest request) {
+        if (!trustForwardHeaders) {
+            return request.getRemoteAddr();
+        }
+
         String forwarded = request.getHeader("X-Forwarded-For");
         if (forwarded != null && !forwarded.isBlank()) {
             String[] ips = forwarded.split(",");

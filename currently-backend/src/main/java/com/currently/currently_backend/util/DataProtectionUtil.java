@@ -6,6 +6,7 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Base64;
 
 public final class DataProtectionUtil {
@@ -96,6 +97,49 @@ public final class DataProtectionUtil {
             return Base64.getEncoder().encodeToString(digest);
         } catch (Exception ex) {
             throw new IllegalStateException("Failed to hash value", ex);
+        }
+    }
+
+    public static byte[] encryptBytes(byte[] plainBytes) {
+        if (plainBytes == null) {
+            return null;
+        }
+        ensureConfigured();
+        try {
+            byte[] iv = new byte[IV_LENGTH_BYTES];
+            SECURE_RANDOM.nextBytes(iv);
+
+            Cipher cipher = Cipher.getInstance(ENC_TRANSFORMATION);
+            cipher.init(Cipher.ENCRYPT_MODE, encryptionKeySpec, new GCMParameterSpec(GCM_TAG_BITS, iv));
+            byte[] cipherText = cipher.doFinal(plainBytes);
+
+            byte[] payload = new byte[iv.length + cipherText.length];
+            System.arraycopy(iv, 0, payload, 0, iv.length);
+            System.arraycopy(cipherText, 0, payload, iv.length, cipherText.length);
+            return payload;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Failed to encrypt bytes", ex);
+        }
+    }
+
+    public static byte[] decryptBytes(byte[] encryptedBytes) {
+        if (encryptedBytes == null) {
+            return null;
+        }
+        ensureConfigured();
+        try {
+            if (encryptedBytes.length < IV_LENGTH_BYTES + 1) {
+                return Arrays.copyOf(encryptedBytes, encryptedBytes.length);
+            }
+
+            byte[] iv = Arrays.copyOfRange(encryptedBytes, 0, IV_LENGTH_BYTES);
+            byte[] cipherText = Arrays.copyOfRange(encryptedBytes, IV_LENGTH_BYTES, encryptedBytes.length);
+
+            Cipher cipher = Cipher.getInstance(ENC_TRANSFORMATION);
+            cipher.init(Cipher.DECRYPT_MODE, encryptionKeySpec, new GCMParameterSpec(GCM_TAG_BITS, iv));
+            return cipher.doFinal(cipherText);
+        } catch (Exception ex) {
+            return Arrays.copyOf(encryptedBytes, encryptedBytes.length);
         }
     }
 

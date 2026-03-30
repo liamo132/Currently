@@ -32,7 +32,7 @@ export default function Dashboard() {
   const [appliances, setAppliances] = useState([]);
   const [vaultActive, setVaultActive] = useState(false);
 
-  // Stored locally for now (DB later). Watch Your Watts reads this automatically.
+  // Cached locally so other pages can reuse the latest persisted value.
   const [pricePerKwh, setPricePerKwh] = useState(() => {
     const saved = localStorage.getItem('pricePerKwh');
     return saved ? Number(saved) : 0.30;
@@ -92,7 +92,7 @@ export default function Dashboard() {
     return fallback;
   };
 
-  // Persist settings locally (migration later -> store in DB per user)
+  // Keep a client-side cache in sync with the persisted backend value.
   useEffect(() => {
     localStorage.setItem('pricePerKwh', String(pricePerKwh));
   }, [pricePerKwh]);

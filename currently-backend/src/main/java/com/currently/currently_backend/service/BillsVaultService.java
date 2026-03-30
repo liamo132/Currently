@@ -5,50 +5,58 @@ import com.currently.currently_backend.model.BillFile;
 import com.currently.currently_backend.model.User;
 import com.currently.currently_backend.repository.BillFileRepository;
 import com.currently.currently_backend.repository.UserRepository;
+import com.currently.currently_backend.util.DataProtectionUtil;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class BillsVaultService {
+
+    private static final long MAX_PDF_BYTES = 5L * 1024L * 1024L;
+    private static final byte[] PDF_MAGIC = "%PDF-".getBytes(StandardCharsets.US_ASCII);
 
     private final UserRepository userRepository;
     private final BillFileRepository billFileRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserLookupHashService userLookupHashService;
+    private final SecurityLockoutService securityLockoutService;
+    private final SecurityAuditService securityAuditService;
 
     public BillsVaultService(UserRepository userRepository,
                              BillFileRepository billFileRepository,
                              PasswordEncoder passwordEncoder,
-                             UserLookupHashService userLookupHashService) {
+                             UserLookupHashService userLookupHashService,
+                             SecurityLockoutService securityLockoutService,
+                             SecurityAuditService securityAuditService) {
         this.userRepository = userRepository;
         this.billFileRepository = billFileRepository;
         this.passwordEncoder = passwordEncoder;
         this.userLookupHashService = userLookupHashService;
+        this.securityLockoutService = securityLockoutService;
+        this.securityAuditService = securityAuditService;
     }
 
-    // Helper: current user from JWT (your JWT sets auth name to email)
     public User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (principal instanceof User) {
-            return (User) principal;  // âœ… Direct access, no DB query
+        if (principal instanceof User user) {
+            return user;
         }
 
-        // Fallback (shouldn't happen with fix above)
         String email = principal.toString();
         return userRepository.findByEmailHash(userLookupHashService.emailHash(email))
-                
                 .orElseThrow(() -> new RuntimeException("User not found for email: " + email));
     }
 
-    // Student rule: PIN must be exactly 4 digits.
     private void validatePinFormat(String pin) {
         if (pin == null || !pin.matches("^\\d{4}$")) {
             throw new IllegalArgumentException("PIN must be exactly 4 digits.");
@@ -60,7 +68,6 @@ public class BillsVaultService {
         return user.getVaultPinHash() != null && !user.getVaultPinHash().isBlank();
     }
 
-    // Set PIN only if not set already (first time setup)
     public void setPinFirstTime(String pin) {
         validatePinFormat(pin);
 
@@ -71,20 +78,26 @@ public class BillsVaultService {
 
         user.setVaultPinHash(passwordEncoder.encode(pin));
         userRepository.save(user);
+        securityAuditService.logVaultAction(user.getId(), "vault_pin_set", "status=created");
     }
 
-    // Verify PIN for any vault action
     public void verifyPinOrThrow(String pin) {
         validatePinFormat(pin);
 
         User user = getCurrentUser();
+        securityLockoutService.assertVaultAllowed(user.getId());
         if (!hasPinSet()) {
             throw new IllegalStateException("Vault PIN not set yet.");
         }
 
         if (!passwordEncoder.matches(pin, user.getVaultPinHash())) {
+            securityLockoutService.recordVaultFailure(user.getId());
+            securityAuditService.logVaultPinFailure(user.getId(), "verify");
             throw new IllegalArgumentException("Invalid PIN.");
         }
+
+        securityLockoutService.recordVaultSuccess(user.getId());
+        securityAuditService.logVaultPinSuccess(user.getId(), "verify");
     }
 
     public BillFileResponse uploadPdf(String pin, MultipartFile file) {
@@ -93,31 +106,43 @@ public class BillsVaultService {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File is required.");
         }
+        if (file.getSize() > MAX_PDF_BYTES) {
+            throw new IllegalArgumentException("PDF exceeds the maximum allowed size of 5 MB.");
+        }
 
         String contentType = file.getContentType() == null ? "" : file.getContentType();
-        String filename = file.getOriginalFilename() == null ? "bill.pdf" : file.getOriginalFilename();
-
-        // â€œStudent securityâ€: enforce PDFs only
-        if (!contentType.equalsIgnoreCase("application/pdf") && !filename.toLowerCase().endsWith(".pdf")) {
+        String filename = sanitizeFilename(file.getOriginalFilename());
+        if (!contentType.equalsIgnoreCase("application/pdf")) {
+            throw new IllegalArgumentException("Only PDF files are allowed.");
+        }
+        if (!filename.toLowerCase(Locale.ROOT).endsWith(".pdf")) {
             throw new IllegalArgumentException("Only PDF files are allowed.");
         }
 
         try {
             byte[] bytes = file.getBytes();
-            String sha256 = sha256Hex(bytes);
+            if (!hasPdfSignature(bytes)) {
+                throw new IllegalArgumentException("Uploaded file content is not a valid PDF.");
+            }
 
+            String sha256 = sha256Hex(bytes);
             User user = getCurrentUser();
 
-            BillFile bf = new BillFile();
-            bf.setUser(user);
-            bf.setOriginalFilename(filename);
-            bf.setContentType("application/pdf");
-            bf.setFileSize((long) bytes.length);
-            bf.setSha256(sha256);
-            bf.setUploadedAt(LocalDateTime.now());
-            bf.setData(bytes);
+            BillFile billFile = new BillFile();
+            billFile.setUser(user);
+            billFile.setOriginalFilename(filename);
+            billFile.setContentType("application/pdf");
+            billFile.setFileSize((long) bytes.length);
+            billFile.setSha256(sha256);
+            billFile.setUploadedAt(LocalDateTime.now());
+            billFile.setData(DataProtectionUtil.encryptBytes(bytes));
 
-            BillFile saved = billFileRepository.save(bf);
+            BillFile saved = billFileRepository.save(billFile);
+            securityAuditService.logVaultAction(
+                    user.getId(),
+                    "vault_file_upload",
+                    "fileId=" + saved.getId() + " filename=" + saved.getOriginalFilename() + " size=" + saved.getFileSize()
+            );
 
             return new BillFileResponse(
                     saved.getId(),
@@ -127,6 +152,8 @@ public class BillsVaultService {
                     saved.getSha256(),
                     saved.getUploadedAt()
             );
+        } catch (IllegalArgumentException ex) {
+            throw ex;
         } catch (Exception e) {
             throw new RuntimeException("Failed to upload PDF: " + e.getMessage());
         }
@@ -135,6 +162,7 @@ public class BillsVaultService {
     public List<BillFileResponse> listFiles(String pin) {
         verifyPinOrThrow(pin);
         User user = getCurrentUser();
+        securityAuditService.logVaultAction(user.getId(), "vault_file_list", "status=ok");
 
         return billFileRepository.findAllByUserIdOrderByUploadedAtDesc(user.getId())
                 .stream()
@@ -153,18 +181,30 @@ public class BillsVaultService {
         verifyPinOrThrow(pin);
         User user = getCurrentUser();
 
-        return billFileRepository.findByIdAndUserId(fileId, user.getId())
+        BillFile billFile = billFileRepository.findByIdAndUserId(fileId, user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("File not found."));
+        billFile.setData(DataProtectionUtil.decryptBytes(billFile.getData()));
+        securityAuditService.logVaultAction(
+                user.getId(),
+                "vault_file_download",
+                "fileId=" + billFile.getId() + " filename=" + billFile.getOriginalFilename()
+        );
+        return billFile;
     }
 
     public void deleteFile(String pin, Long fileId) {
         verifyPinOrThrow(pin);
         User user = getCurrentUser();
 
-        BillFile bf = billFileRepository.findByIdAndUserId(fileId, user.getId())
+        BillFile billFile = billFileRepository.findByIdAndUserId(fileId, user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("File not found."));
 
-        billFileRepository.delete(bf);
+        billFileRepository.delete(billFile);
+        securityAuditService.logVaultAction(
+                user.getId(),
+                "vault_file_delete",
+                "fileId=" + fileId + " filename=" + billFile.getOriginalFilename()
+        );
     }
 
     private String sha256Hex(byte[] data) throws Exception {
@@ -172,5 +212,32 @@ public class BillsVaultService {
         byte[] digest = md.digest(data);
         return HexFormat.of().formatHex(digest);
     }
-}
 
+    private boolean hasPdfSignature(byte[] bytes) {
+        if (bytes == null || bytes.length < PDF_MAGIC.length) {
+            return false;
+        }
+        for (int i = 0; i < PDF_MAGIC.length; i++) {
+            if (bytes[i] != PDF_MAGIC[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String sanitizeFilename(String originalFilename) {
+        if (originalFilename == null || originalFilename.isBlank()) {
+            return "bill.pdf";
+        }
+
+        String sanitized = originalFilename
+                .replace("\\", "_")
+                .replace("/", "_")
+                .replace("\r", "_")
+                .replace("\n", "_")
+                .replace("\"", "_")
+                .trim();
+
+        return sanitized.isBlank() ? "bill.pdf" : sanitized;
+    }
+}

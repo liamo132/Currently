@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -14,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -21,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @SpringBootTest
@@ -413,6 +416,81 @@ class IntegrationApiTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.insights").isEmpty())
                 .andExpect(jsonPath("$.stopReason").value("No appliance data available yet."));
+    }
+
+    @Test
+    void securityHeadersArePresentOnProtectedResponses() throws Exception {
+        String token = registerAndGetToken();
+
+        mockMvc.perform(get("/api/users/me/rooms")
+                        .header(AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(result -> assertThat(result.getResponse().getHeader("X-Content-Type-Options")).isEqualTo("nosniff"))
+                .andExpect(result -> assertThat(result.getResponse().getHeader("X-Frame-Options")).isEqualTo("DENY"))
+                .andExpect(result -> assertThat(result.getResponse().getHeader("Permissions-Policy")).contains("geolocation=()"))
+                .andExpect(result -> assertThat(result.getResponse().getHeader("Cache-Control")).contains("no-cache"));
+    }
+
+    @Test
+    void vaultRejectsSpoofedPdfUploads() throws Exception {
+        String token = registerAndGetToken();
+
+        mockMvc.perform(post("/api/vault/pin")
+                        .header(AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "pin": "1234"
+                                }
+                                """))
+                .andExpect(status().isOk());
+
+        MockMultipartFile fakePdf = new MockMultipartFile(
+                "file",
+                "not-a-real.pdf",
+                "application/pdf",
+                "not really a pdf".getBytes(StandardCharsets.UTF_8)
+        );
+
+        mockMvc.perform(multipart("/api/vault/files")
+                        .file(fakePdf)
+                        .param("pin", "1234")
+                        .header(AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Uploaded file content is not a valid PDF."));
+    }
+
+    @Test
+    void loginLocksAfterRepeatedFailures() throws Exception {
+        TestAccount account = registerAccount("lockout");
+
+        String badPasswordBody = """
+                {
+                  "email": "%s",
+                  "password": "WrongPass123!"
+                }
+                """.formatted(account.email());
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(badPasswordBody))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(badPasswordBody))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(badPasswordBody))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(badPasswordBody))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Too many failed login attempts. Try again later."));
     }
 
     private String registerAndGetToken() throws Exception {

@@ -23,113 +23,125 @@ export default function ApplianceCard({
   onUpdate,
   onRemove,
 }) {
+  const normaliseWholeNumber = (value, { max } = {}) => {
+    if (value === "") return null;
+
+    const parsed = Number.parseInt(value, 10);
+    if (Number.isNaN(parsed)) return null;
+
+    const boundedValue = Math.max(0, parsed);
+    return max !== undefined ? Math.min(boundedValue, max) : boundedValue;
+  };
+
   const handleChange = (field, value) => {
     onUpdate(appliance.id, { [field]: value });
   };
 
   const isContinuous = appliance.usageType === "continuous";
-  const usageLabel = isContinuous ? "Hours used per day" : "Uses per day";
-
   const currentRoomId = appliance.roomId ?? null;
 
   return (
     <div className="appliance-card">
-      <div className="card-header">
-        <input
-          type="text"
-          value={appliance.customName || appliance.applianceName || ""}
-          onChange={(e) => handleChange("customName", e.target.value)}
-          className="appliance-name"
-          placeholder="Appliance name"
-        />
-        <button
-          className="remove-btn"
-          onClick={() => onRemove(appliance.id)}
-          title="Remove appliance"
-        >
-          ✕
-        </button>
+      <div className="appliance-identity">
+        <div className="card-header">
+          <input
+            type="text"
+            value={appliance.customName || appliance.applianceName || ""}
+            onChange={(e) => handleChange("customName", e.target.value)}
+            className="appliance-name"
+            placeholder="Appliance name"
+          />
+          <button
+            className="remove-btn"
+            onClick={() => onRemove(appliance.id)}
+            title="Remove appliance"
+          >
+            x
+          </button>
+        </div>
+
+        {baseAppliance && (
+          <div className="appliance-subtitle">
+            <span className="appliance-base-name">
+              {baseAppliance.name} ({baseAppliance.category})
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Optional subtext showing base appliance info */}
-      {baseAppliance && (
-        <div className="appliance-subtitle">
-          <span className="appliance-base-name">
-            {baseAppliance.name} ({baseAppliance.category})
-          </span>
-        </div>
-      )}
+      <div className="field-group">
+        <label>Room</label>
+        <select
+          value={currentRoomId !== null ? String(currentRoomId) : "none"}
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val === "none") {
+              handleChange("roomId", null);
+            } else {
+              handleChange("roomId", Number(val));
+            }
+          }}
+          className="select-field"
+        >
+          <option value="none">Unassigned</option>
+          {rooms.map((room) => (
+            <option key={room.id} value={room.id}>
+              {room.name} {room.floorLabel ? `(${room.floorLabel})` : ""}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      <div className="card-fields">
-        {/* Room selection */}
-        <div className="field-group">
-          <label>Room</label>
-          <select
-            value={currentRoomId !== null ? String(currentRoomId) : "none"}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val === "none") {
-                handleChange("roomId", null);
-              } else {
-                handleChange("roomId", Number(val));
-              }
-            }}
-            className="select-field"
-          >
-            <option value="none">Unassigned</option>
-            {rooms.map((room) => (
-              <option key={room.id} value={room.id}>
-                {room.name} {room.floorLabel ? `(${room.floorLabel})` : ""}
-              </option>
-            ))}
-          </select>
+      <div className="field-group">
+        <label>Usage Type</label>
+        <div className="usage-type-pill">
+          {isContinuous ? "Continuous" : "Per use"}
         </div>
+      </div>
 
-        {/* Usage type (read-only text) */}
-        <div className="field-group">
-          <label>Usage Type</label>
-          <div className="usage-type-pill">
-            {isContinuous ? "Continuous" : "Per use"}
-          </div>
-        </div>
-
-        {/* Hours per day */}
-        <div className="field-group">
-          <label>Hours per day</label>
+      <div className={`field-group ${!isContinuous ? "field-group--inactive" : ""}`}>
+        <label>Hours per day</label>
+        {isContinuous ? (
           <input
             type="number"
             min="0"
-            step="0.1"
+            max="24"
+            step="1"
+            inputMode="numeric"
             value={appliance.hoursPerDay ?? ""}
             onChange={(e) =>
               handleChange(
                 "hoursPerDay",
-                e.target.value === "" ? null : Number(e.target.value)
+                normaliseWholeNumber(e.target.value, { max: 24 })
               )
             }
             className="input-field"
-            disabled={!isContinuous}
           />
-        </div>
+        ) : (
+          <div className="input-field input-field--inactive">N/A</div>
+        )}
+      </div>
 
-        {/* Uses per day */}
-        <div className="field-group">
-          <label>Uses per day</label>
+      <div className={`field-group ${isContinuous ? "field-group--inactive" : ""}`}>
+        <label>Uses per day</label>
+        {isContinuous ? (
+          <div className="input-field input-field--inactive">N/A</div>
+        ) : (
           <input
             type="number"
             min="0"
-            step="0.1"
+            step="1"
+            inputMode="numeric"
             value={appliance.usesPerDay ?? ""}
             onChange={(e) =>
               handleChange(
                 "usesPerDay",
-                e.target.value === "" ? null : Number(e.target.value)
+                normaliseWholeNumber(e.target.value)
               )
             }
             className="input-field"
-            disabled={isContinuous}
           />
-        </div>
+        )}
       </div>
     </div>
   );

@@ -40,7 +40,7 @@ export default function SmartInsights({ appliances = [], pricePerKwh = 0.3 }) {
       setError('');
       setStopReason('');
 
-      // send price for now so backend can still fallback cleanly during migration
+      // Send the latest tariff value so insight calculations stay aligned with the UI.
       const res = await fetchWithAuth(`${API_BASE}/api/insights/generate`, {
         method: 'POST',
         body: JSON.stringify({

@@ -30,13 +30,25 @@
 
 ### Abuse resistance
 - Rate limiting is enabled for `/api/auth/**` and `/api/vault/**` to reduce brute-force attempts.
+- Repeated failed logins and vault PIN attempts now trigger temporary in-memory lockouts.
+- Rate limiting trusts `X-Forwarded-For` only when explicitly enabled by config.
+
+### Vault and file protection
+- Vault bill files are encrypted at rest before being stored in the database.
+- Vault uploads enforce a 5 MB maximum size.
+- Vault uploads require both PDF metadata and a real PDF file signature (`%PDF-`).
+- Download responses use `no-store` cache headers to reduce sensitive file caching.
+
+### HTTP response hardening
+- Security headers now include HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, and a restrictive API CSP.
+- Default cache-control headers are enabled for API responses.
+
+### Security monitoring
+- Security-sensitive events are written to a dedicated audit log (`security-audit.log`) with rolling retention.
+- Auth and vault actions are logged without storing raw passwords or PINs.
 
 ## Known Limitations
 - JWT revocation/blacklisting is not implemented; tokens remain valid until expiry.
-- No refresh-token flow yet; session renewal is login-based.
 - Rate limiting is in-memory and per-instance; not shared across multiple backend replicas.
-- CORS allowlist is static env config and not dynamically managed per environment tenant.
-- No automated secret-rotation workflow is implemented in this repository.
-- API error localization/i18n is not implemented.
-
+- No password breach screening or stronger password policy checks are implemented yet.
 

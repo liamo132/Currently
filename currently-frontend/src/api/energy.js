@@ -37,7 +37,7 @@ export async function getEnergySettings() {
     headers: authHeaders(),
   });
 
-  // If endpoint not created yet, treat as "no server value" and fall back to local storage.
+  // If the request fails, let the caller fall back to its cached client value.
   if (res.status === 404) return null;
 
   return parseJsonOrThrow(res);

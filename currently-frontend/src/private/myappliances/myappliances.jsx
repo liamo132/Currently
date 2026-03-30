@@ -27,6 +27,7 @@ export default function MyAppliances() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Authenticated fetch helper
   const fetchWithAuth = useCallback(async (url, options = {}) => {
@@ -52,47 +53,44 @@ export default function MyAppliances() {
   const findBaseAppliance = (applianceName) =>
     catalogue.find((a) => a.name === applianceName);
 
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const catRes = await fetch(`${API_BASE}/api/appliances`);
+      if (!catRes.ok) {
+        throw new Error("Failed to load base appliances catalogue.");
+      }
+      const catData = await catRes.json();
+      setCatalogue(catData);
+
+      if (catData.length > 0) {
+        setSelectedBaseName((current) => current || catData[0].name);
+      }
+
+      const userRes = await fetchWithAuth(
+        `${API_BASE}/api/users/me/appliances`
+      );
+      const userData = await userRes.json();
+      setUserAppliances(userData);
+
+      const roomsRes = await fetchWithAuth(
+        `${API_BASE}/api/users/me/rooms`
+      );
+      const roomsData = await roomsRes.json();
+      setRooms(roomsData);
+    } catch (err) {
+      setError(err.message || "An unexpected error occurred while loading.");
+    } finally {
+      setLoading(false);
+    }
+  }, [API_BASE, fetchWithAuth]);
+
   // Load catalogue + user appliances + rooms
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError("");
-
-        // 1) Base catalogue (public)
-        const catRes = await fetch(`${API_BASE}/api/appliances`);
-        if (!catRes.ok) {
-          throw new Error("Failed to load base appliances catalogue.");
-        }
-        const catData = await catRes.json();
-        setCatalogue(catData);
-
-        if (catData.length > 0) {
-          setSelectedBaseName(catData[0].name);
-        }
-
-        // 2) User appliances (auth)
-        const userRes = await fetchWithAuth(
-          `${API_BASE}/api/users/me/appliances`
-        );
-        const userData = await userRes.json();
-        setUserAppliances(userData);
-
-        // 3) Rooms from Map My House
-        const roomsRes = await fetchWithAuth(
-          `${API_BASE}/api/users/me/rooms`
-        );
-        const roomsData = await roomsRes.json();
-        setRooms(roomsData);
-      } catch (err) {
-        setError(err.message || "An unexpected error occurred while loading.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadData();
-  }, [API_BASE, fetchWithAuth]);
+  }, [loadData]);
 
   // Unique room options from rooms API
   const roomOptions = rooms.map((r) => ({
@@ -101,16 +99,23 @@ export default function MyAppliances() {
     floorLabel: r.floorLabel,
   }));
 
+  const assignedAppliancesCount = userAppliances.filter(
+    (ua) => ua.roomId !== null && ua.roomId !== undefined
+  ).length;
+
   // Filter by search + room
   const filteredAppliances = userAppliances.filter((ua) => {
     const label = (ua.customName || ua.applianceName || "").toLowerCase();
     const matchesSearch = label.includes(searchTerm.toLowerCase());
 
     const roomId = ua.roomId || null;
-    const filterRoomId = selectedRoomFilter ? Number(selectedRoomFilter) : null;
+    let matchesRoom = true;
 
-    const matchesRoom =
-      !filterRoomId || (roomId !== null && roomId === filterRoomId);
+    if (selectedRoomFilter === "none") {
+      matchesRoom = roomId === null;
+    } else if (selectedRoomFilter) {
+      matchesRoom = roomId !== null && roomId === Number(selectedRoomFilter);
+    }
 
     return matchesSearch && matchesRoom;
   });
@@ -228,6 +233,11 @@ export default function MyAppliances() {
     }
   };
 
+  const handleSave = () => {
+    setIsRefreshing(true);
+    window.location.reload();
+  };
+
   if (loading) {
     return (
       <div className="myappliances-container private-page">
@@ -254,6 +264,21 @@ export default function MyAppliances() {
             {error}
           </div>
         )}
+
+        <div className="myappliances-overview">
+          <div className="overview-pill">
+            <span className="overview-pill__value">{userAppliances.length}</span>
+            <span className="overview-pill__label">appliances tracked</span>
+          </div>
+          <div className="overview-pill">
+            <span className="overview-pill__value">{assignedAppliancesCount}</span>
+            <span className="overview-pill__label">assigned to rooms</span>
+          </div>
+          <div className="overview-pill">
+            <span className="overview-pill__value">{userAppliances.length - assignedAppliancesCount}</span>
+            <span className="overview-pill__label">still unassigned</span>
+          </div>
+        </div>
 
         {/* Search + room filter */}
         <div className="filter-row">
@@ -309,6 +334,13 @@ export default function MyAppliances() {
 
         {/* Action button under the grey box */}
         <div className="actions">
+          <button
+            className="save-btn"
+            onClick={handleSave}
+            disabled={isRefreshing}
+          >
+            {isRefreshing ? "Saving..." : "Save"}
+          </button>
           <button
             className="add-btn"
             onClick={() => setIsAddModalOpen(true)}
