@@ -38,6 +38,7 @@ export default function MyAppliances() {
   const userAppliancesRef = useRef([]);
 
   const [selectedBaseName, setSelectedBaseName] = useState("");
+  const [catalogueSearch, setCatalogueSearch] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRoomFilter, setSelectedRoomFilter] = useState(""); // roomId as string or "" for all
   const [sortMode, setSortMode] = useState("cost-desc");
@@ -143,6 +144,63 @@ export default function MyAppliances() {
   const roomNameById = useMemo(() => {
     return new Map(roomOptions.map((room) => [room.id, room.name]));
   }, [roomOptions]);
+
+  const filteredCatalogue = useMemo(() => {
+    const search = catalogueSearch.trim().toLowerCase();
+    return catalogue.filter((appliance) => {
+      const name = (appliance.name || "").toLowerCase();
+      const category = (appliance.category || "").toLowerCase();
+      return search === "" || name.includes(search) || category.includes(search);
+    });
+  }, [catalogue, catalogueSearch]);
+
+  const filteredCatalogueGroups = useMemo(() => {
+    return filteredCatalogue.reduce((groups, appliance) => {
+      const category = appliance.category || "Other";
+      if (!groups.has(category)) {
+        groups.set(category, []);
+      }
+      groups.get(category).push(appliance);
+      return groups;
+    }, new Map());
+  }, [filteredCatalogue]);
+
+  useEffect(() => {
+    if (!isAddModalOpen) return;
+
+    if (filteredCatalogue.length === 0) {
+      setSelectedBaseName("");
+      return;
+    }
+
+    const selectedStillVisible = filteredCatalogue.some(
+      (appliance) => appliance.name === selectedBaseName
+    );
+
+    if (!selectedStillVisible) {
+      setSelectedBaseName(filteredCatalogue[0].name);
+    }
+  }, [filteredCatalogue, isAddModalOpen, selectedBaseName]);
+
+  const selectedBaseAppliance = useMemo(
+    () => findBaseAppliance(selectedBaseName),
+    [findBaseAppliance, selectedBaseName]
+  );
+
+  const formatUsageLabel = (appliance) => {
+    if (!appliance) return "";
+    return appliance.usageType === "continuous"
+      ? "Continuous"
+      : "Per use";
+  };
+
+  const formatDefaultUsage = (appliance) => {
+    if (!appliance) return "";
+    if (appliance.usageType === "continuous") {
+      return `${appliance.averageWatts}W for ${appliance.defaultHoursPerDay}h/day`;
+    }
+    return `${appliance.averageWattsPerUse}Wh per use, ${appliance.defaultUsesPerDay}/day`;
+  };
 
   const filteredAppliances = useMemo(() => {
     // Filtering and sorting can run often while typing, so keep the search
@@ -466,7 +524,10 @@ export default function MyAppliances() {
           </button>
           <button
             className="add-btn"
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={() => {
+              setCatalogueSearch("");
+              setIsAddModalOpen(true);
+            }}
           >
             + Add Appliance
           </button>
@@ -477,50 +538,90 @@ export default function MyAppliances() {
       {isAddModalOpen && (
         <div className="modal-backdrop">
           <div className="modal">
-            <h2 className="modal-title">Add Appliance</h2>
-
-            <label className="modal-label">Select from catalogue</label>
-            <select
-              className="modal-select"
-              value={selectedBaseName}
-              onChange={(e) => setSelectedBaseName(e.target.value)}
-            >
-              {catalogue.map((appliance) => (
-                <option key={appliance.name} value={appliance.name}>
-                  {appliance.name} ({appliance.category})
-                </option>
-              ))}
-            </select>
-
-            {selectedBaseName && (
-              <div className="modal-preview">
-                {(() => {
-                  const base = findBaseAppliance(selectedBaseName);
-                  if (!base) return null;
-                  return (
-                    <>
-                      <div><strong>Category:</strong> {base.category}</div>
-                      <div>
-                        <strong>Usage type:</strong>{" "}
-                        {base.usageType === "continuous"
-                          ? "Continuous (hours per day)"
-                          : "Per use (uses per day)"}
-                      </div>
-                    </>
-                  );
-                })()}
+            <div className="modal-header">
+              <div>
+                <h2 className="modal-title">Add Appliance</h2>
+                <p className="modal-subtitle">Pick a catalogue item and Currently will use its default energy profile.</p>
               </div>
-            )}
+              <button
+                type="button"
+                className="modal-close"
+                onClick={() => setIsAddModalOpen(false)}
+                aria-label="Close add appliance"
+              >
+                x
+              </button>
+            </div>
+
+            <div className="modal-grid">
+              <div className="modal-picker">
+                <label className="modal-label" htmlFor="catalogue-search">Search catalogue</label>
+                <input
+                  id="catalogue-search"
+                  className="modal-search"
+                  type="search"
+                  value={catalogueSearch}
+                  onChange={(e) => setCatalogueSearch(e.target.value)}
+                  placeholder="Search by appliance or room type"
+                />
+
+                <label className="modal-label" htmlFor="catalogue-select">Appliance</label>
+                <select
+                  id="catalogue-select"
+                  className="modal-select modal-select--large"
+                  value={selectedBaseName}
+                  onChange={(e) => setSelectedBaseName(e.target.value)}
+                  size={Math.min(10, Math.max(5, catalogue.length))}
+                >
+                  {[...filteredCatalogueGroups.entries()].map(([category, appliances]) => (
+                    <optgroup key={category} label={category}>
+                      {appliances.map((appliance) => (
+                        <option key={appliance.name} value={appliance.name}>
+                          {appliance.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                {filteredCatalogueGroups.size === 0 && (
+                  <div className="modal-empty">No matching appliances</div>
+                )}
+              </div>
+
+              <div className="modal-preview">
+                {selectedBaseAppliance ? (
+                  <>
+                    <span className="modal-preview__eyebrow">{selectedBaseAppliance.category}</span>
+                    <h3>{selectedBaseAppliance.name}</h3>
+                    <div className="modal-preview__rows">
+                      <div>
+                        <span>Usage model</span>
+                        <strong>{formatUsageLabel(selectedBaseAppliance)}</strong>
+                      </div>
+                      <div>
+                        <span>Default assumption</span>
+                        <strong>{formatDefaultUsage(selectedBaseAppliance)}</strong>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="modal-empty">Select an appliance to preview its defaults.</div>
+                )}
+              </div>
+            </div>
 
             <div className="modal-actions">
               <button
-                className="modal-btn primary"
+                type="button"
+                className="modal-btn modal-btn--primary"
                 onClick={handleConfirmAdd}
+                disabled={!selectedBaseAppliance}
               >
                 Add
               </button>
               <button
-                className="modal-btn"
+                type="button"
+                className="modal-btn modal-btn--secondary"
                 onClick={() => setIsAddModalOpen(false)}
               >
                 Cancel

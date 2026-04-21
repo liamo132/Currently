@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "../../styles/global.css";
 
 export default function Footer() {
   return (

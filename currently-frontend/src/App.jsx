@@ -9,7 +9,6 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Header from "./public/components/header";
-import Footer from "./public/components/footer";
 import IndexPage from "./public/pages/index/index.jsx";
 import Login from "./public/pages/auth/Login.jsx";
 import Signup from "./public/pages/auth/Signup.jsx";
@@ -58,7 +57,6 @@ function PublicLayout() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>
-      {/* <Footer /> — optional */}
     </>
   );
 }

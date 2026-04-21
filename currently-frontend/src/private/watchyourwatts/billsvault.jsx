@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import './css//BillsVault.css';
+import './css/billsvault.css';
 
 export default function BillsVault() {
   const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';

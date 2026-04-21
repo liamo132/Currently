@@ -102,3 +102,5 @@
 2026-04-21 11:42:41.264 INFO  event=login_success method=POST path=/api/auth/login ip=127.0.0.1 principal=login-183f16ca@example.com
 2026-04-21 11:42:41.466 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-d0f22cab@example.com
 2026-04-21 11:47:53.901 INFO  event=login_success method=POST path=/api/auth/login ip=0:0:0:0:0:0:0:1 principal=test@tester.ie
+2026-04-21 12:57:43.721 INFO  event=login_failure method=POST path=/api/auth/login ip=0:0:0:0:0:0:0:1 principal=test@tester.ie reason=invalid_credentials
+2026-04-21 12:57:51.944 INFO  event=registration_success method=POST path=/api/auth/register ip=0:0:0:0:0:0:0:1 principal=test@tester.ie
