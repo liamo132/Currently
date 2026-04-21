@@ -1,8 +1,104 @@
-2026-03-30 18:13:01.181 INFO  event=login_success method=POST path=/api/auth/login ip=0:0:0:0:0:0:0:1 principal=test@tester.ie
-2026-03-30 18:13:17.740 INFO  event=vault_pin_set method=POST path=/api/vault/pin ip=0:0:0:0:0:0:0:1 userId=1 status=created
-2026-03-30 18:13:17.962 INFO  event=vault_pin_success method=POST path=/api/vault/files/list ip=0:0:0:0:0:0:0:1 userId=1 action=verify
-2026-03-30 18:13:17.962 INFO  event=vault_file_list method=POST path=/api/vault/files/list ip=0:0:0:0:0:0:0:1 userId=1 status=ok
-2026-03-30 18:13:26.929 INFO  event=vault_pin_success method=POST path=/api/vault/files ip=0:0:0:0:0:0:0:1 userId=1 action=verify
-2026-03-30 18:13:27.129 INFO  event=vault_file_upload method=POST path=/api/vault/files ip=0:0:0:0:0:0:0:1 userId=1 fileId=1 filename=lukebanahan.pdf size=3321289
-2026-03-30 18:13:27.356 INFO  event=vault_pin_success method=POST path=/api/vault/files/list ip=0:0:0:0:0:0:0:1 userId=1 action=verify
-2026-03-30 18:13:27.356 INFO  event=vault_file_list method=POST path=/api/vault/files/list ip=0:0:0:0:0:0:0:1 userId=1 status=ok
+2026-04-21 11:14:31.933 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=lockout-0fa34916@example.com
+2026-04-21 11:14:32.378 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=lockout-0fa34916@example.com reason=invalid_credentials
+2026-04-21 11:14:32.574 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=lockout-0fa34916@example.com reason=invalid_credentials
+2026-04-21 11:14:32.764 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=lockout-0fa34916@example.com reason=invalid_credentials
+2026-04-21 11:14:32.969 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-7e30bc7f@example.com
+2026-04-21 11:14:33.190 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-b0e20c14@example.com
+2026-04-21 11:14:33.392 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-1967560b@example.com
+2026-04-21 11:14:33.604 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=existing-6d1ae1e2@example.com
+2026-04-21 11:14:33.799 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-c6009ad3@example.com
+2026-04-21 11:14:34.050 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-5824f61e@example.com
+2026-04-21 11:14:34.258 INFO  event=vault_pin_set method=POST path=/api/vault/pin ip=127.0.0.1 userId=7 status=created
+2026-04-21 11:14:34.452 INFO  event=vault_pin_success method=POST path=/api/vault/files ip=127.0.0.1 userId=7 action=verify
+2026-04-21 11:14:34.646 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-cec66fd2@example.com
+2026-04-21 11:14:34.844 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-de00653c@example.com
+2026-04-21 11:14:35.050 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-9c4a5374@example.com
+2026-04-21 11:14:35.251 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-bc621f39@example.com
+2026-04-21 11:14:35.467 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-78bd625d@example.com
+2026-04-21 11:14:35.667 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=badcreds-406666e7@example.com
+2026-04-21 11:14:35.861 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=badcreds-406666e7@example.com reason=invalid_credentials
+2026-04-21 11:14:36.053 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-32a4fa32@example.com
+2026-04-21 11:14:36.290 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-c0ca61a5@example.com
+2026-04-21 11:14:36.498 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=login-332b7b0f@example.com
+2026-04-21 11:14:36.691 INFO  event=login_success method=POST path=/api/auth/login ip=127.0.0.1 principal=login-332b7b0f@example.com
+2026-04-21 11:14:36.885 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-20b7a03f@example.com
+2026-04-21 11:15:53.258 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=lockout-ad5f5f98@example.com
+2026-04-21 11:15:53.709 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=lockout-ad5f5f98@example.com reason=invalid_credentials
+2026-04-21 11:15:53.904 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=lockout-ad5f5f98@example.com reason=invalid_credentials
+2026-04-21 11:15:54.099 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=lockout-ad5f5f98@example.com reason=invalid_credentials
+2026-04-21 11:15:54.304 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-fd41644a@example.com
+2026-04-21 11:15:54.522 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-52e2232e@example.com
+2026-04-21 11:15:54.730 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-0b334710@example.com
+2026-04-21 11:15:54.945 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=existing-bca42a3b@example.com
+2026-04-21 11:15:55.142 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-bef0ade1@example.com
+2026-04-21 11:15:55.384 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-a8b28013@example.com
+2026-04-21 11:15:55.584 INFO  event=vault_pin_set method=POST path=/api/vault/pin ip=127.0.0.1 userId=7 status=created
+2026-04-21 11:15:55.779 INFO  event=vault_pin_success method=POST path=/api/vault/files ip=127.0.0.1 userId=7 action=verify
+2026-04-21 11:15:55.973 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-936227d5@example.com
+2026-04-21 11:15:56.167 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-8e7fca05@example.com
+2026-04-21 11:15:56.375 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-82e14bd8@example.com
+2026-04-21 11:15:56.592 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-0f95b9a2@example.com
+2026-04-21 11:15:56.803 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-5db589a7@example.com
+2026-04-21 11:15:57.001 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=badcreds-60399292@example.com
+2026-04-21 11:15:57.196 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=badcreds-60399292@example.com reason=invalid_credentials
+2026-04-21 11:15:57.388 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-65112e17@example.com
+2026-04-21 11:15:57.619 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-92019cb2@example.com
+2026-04-21 11:15:57.820 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=login-28cb7926@example.com
+2026-04-21 11:15:58.016 INFO  event=login_success method=POST path=/api/auth/login ip=127.0.0.1 principal=login-28cb7926@example.com
+2026-04-21 11:15:58.211 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-9a81b85b@example.com
+2026-04-21 11:17:52.140 INFO  event=login_success method=POST path=/api/auth/login ip=0:0:0:0:0:0:0:1 principal=test@tester.ie
+2026-04-21 11:29:29.976 INFO  event=login_success method=POST path=/api/auth/login ip=0:0:0:0:0:0:0:1 principal=test@tester.ie
+2026-04-21 11:30:55.353 INFO  event=vault_pin_success method=POST path=/api/vault/unlock ip=0:0:0:0:0:0:0:1 userId=1 action=verify
+2026-04-21 11:30:55.565 INFO  event=vault_pin_success method=POST path=/api/vault/files/list ip=0:0:0:0:0:0:0:1 userId=1 action=verify
+2026-04-21 11:30:55.565 INFO  event=vault_file_list method=POST path=/api/vault/files/list ip=0:0:0:0:0:0:0:1 userId=1 status=ok
+2026-04-21 11:37:51.560 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=lockout-04734eb0@example.com
+2026-04-21 11:37:52.032 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=lockout-04734eb0@example.com reason=invalid_credentials
+2026-04-21 11:37:52.227 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=lockout-04734eb0@example.com reason=invalid_credentials
+2026-04-21 11:37:52.427 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=lockout-04734eb0@example.com reason=invalid_credentials
+2026-04-21 11:37:52.633 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-d5df0414@example.com
+2026-04-21 11:37:52.893 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-b73d9394@example.com
+2026-04-21 11:37:53.105 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-eed5fe0e@example.com
+2026-04-21 11:37:53.322 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=existing-6887f341@example.com
+2026-04-21 11:37:53.522 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-e66727bf@example.com
+2026-04-21 11:37:53.778 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-a0c492b3@example.com
+2026-04-21 11:37:53.983 INFO  event=vault_pin_set method=POST path=/api/vault/pin ip=127.0.0.1 userId=7 status=created
+2026-04-21 11:37:54.179 INFO  event=vault_pin_success method=POST path=/api/vault/files ip=127.0.0.1 userId=7 action=verify
+2026-04-21 11:37:54.373 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-b2b57fda@example.com
+2026-04-21 11:37:54.576 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-edd1deac@example.com
+2026-04-21 11:37:54.794 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-29583b1b@example.com
+2026-04-21 11:37:55.000 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-e502297a@example.com
+2026-04-21 11:37:55.219 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-7641aca0@example.com
+2026-04-21 11:37:55.424 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=badcreds-228e1f22@example.com
+2026-04-21 11:37:55.615 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=badcreds-228e1f22@example.com reason=invalid_credentials
+2026-04-21 11:37:55.810 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-8b7c8f32@example.com
+2026-04-21 11:37:56.046 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-4761a451@example.com
+2026-04-21 11:37:56.254 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=login-3c7d65ae@example.com
+2026-04-21 11:37:56.453 INFO  event=login_success method=POST path=/api/auth/login ip=127.0.0.1 principal=login-3c7d65ae@example.com
+2026-04-21 11:37:56.654 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-997bbf0b@example.com
+2026-04-21 11:38:57.320 INFO  event=login_success method=POST path=/api/auth/login ip=0:0:0:0:0:0:0:1 principal=test@tester.ie
+2026-04-21 11:40:54.213 INFO  event=login_success method=POST path=/api/auth/login ip=0:0:0:0:0:0:0:1 principal=test@tester.ie
+2026-04-21 11:42:36.357 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=lockout-d8f1403f@example.com
+2026-04-21 11:42:36.811 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=lockout-d8f1403f@example.com reason=invalid_credentials
+2026-04-21 11:42:37.004 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=lockout-d8f1403f@example.com reason=invalid_credentials
+2026-04-21 11:42:37.201 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=lockout-d8f1403f@example.com reason=invalid_credentials
+2026-04-21 11:42:37.411 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-1409bbe3@example.com
+2026-04-21 11:42:37.641 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-b437d229@example.com
+2026-04-21 11:42:37.861 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-19f7b420@example.com
+2026-04-21 11:42:38.073 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=existing-25e2f987@example.com
+2026-04-21 11:42:38.271 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-6295a6a7@example.com
+2026-04-21 11:42:38.527 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-0a0c357a@example.com
+2026-04-21 11:42:38.734 INFO  event=vault_pin_set method=POST path=/api/vault/pin ip=127.0.0.1 userId=7 status=created
+2026-04-21 11:42:38.926 INFO  event=vault_pin_success method=POST path=/api/vault/files ip=127.0.0.1 userId=7 action=verify
+2026-04-21 11:42:39.121 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-89aebec8@example.com
+2026-04-21 11:42:39.334 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-90961245@example.com
+2026-04-21 11:42:39.555 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-0082b2d8@example.com
+2026-04-21 11:42:39.763 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-068df49c@example.com
+2026-04-21 11:42:39.989 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-53c3abcc@example.com
+2026-04-21 11:42:40.194 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=badcreds-c4e9c657@example.com
+2026-04-21 11:42:40.384 INFO  event=login_failure method=POST path=/api/auth/login ip=127.0.0.1 principal=badcreds-c4e9c657@example.com reason=invalid_credentials
+2026-04-21 11:42:40.588 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-77926cfa@example.com
+2026-04-21 11:42:40.836 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-5109aa5c@example.com
+2026-04-21 11:42:41.065 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=login-183f16ca@example.com
+2026-04-21 11:42:41.264 INFO  event=login_success method=POST path=/api/auth/login ip=127.0.0.1 principal=login-183f16ca@example.com
+2026-04-21 11:42:41.466 INFO  event=registration_success method=POST path=/api/auth/register ip=127.0.0.1 principal=journey-d0f22cab@example.com
+2026-04-21 11:47:53.901 INFO  event=login_success method=POST path=/api/auth/login ip=0:0:0:0:0:0:0:1 principal=test@tester.ie

@@ -22,7 +22,13 @@ import java.time.LocalDateTime;
  * Energy Saving Trust (UK â€“ widely accepted academically)
  */
 @Entity
-@Table(name = "user_appliances")
+@Table(
+        name = "user_appliances",
+        indexes = {
+                @Index(name = "idx_user_appliances_user_created", columnList = "user_id, created_at"),
+                @Index(name = "idx_user_appliances_room", columnList = "room_id")
+        }
+)
 public class UserAppliance {
 
     @Id

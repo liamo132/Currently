@@ -103,6 +103,10 @@
   flex: 0 0 200px;
 }
 
+.sort-filter {
+  flex: 0 0 220px;
+}
+
 .room-select {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -157,11 +161,19 @@
 .actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 0.75rem;
   margin-top: 1.5rem;
 }
 
+.save-message {
+  color: #047857;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .save-btn,
+.export-btn,
 .add-btn {
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
@@ -180,13 +192,15 @@
   color: var(--color-white);
 }
 
-.save-btn:hover:not(:disabled) {
+.save-btn:hover:not(:disabled),
+.export-btn:hover:not(:disabled) {
   filter: brightness(0.95);
 }
 
-.save-btn:disabled {
+.save-btn:disabled,
+.export-btn:disabled {
   opacity: 0.7;
-  cursor: wait;
+  cursor: not-allowed;
 }
 
 .add-btn:hover {
@@ -304,8 +318,15 @@
     flex: 1 1 auto;
   }
 
+  .sort-filter {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
   .actions {
     justify-content: stretch;
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .appliances-container {
@@ -314,6 +335,7 @@
   }
 
   .save-btn,
+  .export-btn,
   .add-btn {
     width: 100%;
   }

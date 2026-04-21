@@ -7,11 +7,27 @@
  */
 
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import HeaderUser from "../../public/components/header-user";
 import ApplianceCard from "./appliancecard";
 import "../shared/private-layout.css";
 import "./css/myappliances.css";
+
+function useDebouncedValue(value, delayMs) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => setDebouncedValue(value), delayMs);
+    return () => window.clearTimeout(timeoutId);
+  }, [value, delayMs]);
+
+  return debouncedValue;
+}
+
+const csvEscape = (value) => {
+  const text = value === null || value === undefined ? "" : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+};
 
 export default function MyAppliances() {
   const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8080";
@@ -19,15 +35,18 @@ export default function MyAppliances() {
   const [catalogue, setCatalogue] = useState([]);
   const [userAppliances, setUserAppliances] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const userAppliancesRef = useRef([]);
 
   const [selectedBaseName, setSelectedBaseName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRoomFilter, setSelectedRoomFilter] = useState(""); // roomId as string or "" for all
+  const [sortMode, setSortMode] = useState("cost-desc");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 180);
 
   // Authenticated fetch helper
   const fetchWithAuth = useCallback(async (url, options = {}) => {
@@ -50,36 +69,34 @@ export default function MyAppliances() {
     return response;
   }, []);
 
-  const findBaseAppliance = (applianceName) =>
-    catalogue.find((a) => a.name === applianceName);
-
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
 
-      const catRes = await fetch(`${API_BASE}/api/appliances`);
+      const [catRes, userRes, roomsRes] = await Promise.all([
+        fetch(`${API_BASE}/api/appliances`),
+        fetchWithAuth(`${API_BASE}/api/users/me/appliances`),
+        fetchWithAuth(`${API_BASE}/api/users/me/rooms`),
+      ]);
+
       if (!catRes.ok) {
         throw new Error("Failed to load base appliances catalogue.");
       }
-      const catData = await catRes.json();
+
+      const [catData, userData, roomsData] = await Promise.all([
+        catRes.json(),
+        userRes.json(),
+        roomsRes.json(),
+      ]);
+
       setCatalogue(catData);
+      setUserAppliances(userData);
+      setRooms(roomsData);
 
       if (catData.length > 0) {
         setSelectedBaseName((current) => current || catData[0].name);
       }
-
-      const userRes = await fetchWithAuth(
-        `${API_BASE}/api/users/me/appliances`
-      );
-      const userData = await userRes.json();
-      setUserAppliances(userData);
-
-      const roomsRes = await fetchWithAuth(
-        `${API_BASE}/api/users/me/rooms`
-      );
-      const roomsData = await roomsRes.json();
-      setRooms(roomsData);
     } catch (err) {
       setError(err.message || "An unexpected error occurred while loading.");
     } finally {
@@ -92,33 +109,79 @@ export default function MyAppliances() {
     loadData();
   }, [loadData]);
 
-  // Unique room options from rooms API
-  const roomOptions = rooms.map((r) => ({
-    id: r.id,
-    name: r.name,
-    floorLabel: r.floorLabel,
-  }));
+  useEffect(() => {
+    userAppliancesRef.current = userAppliances;
+  }, [userAppliances]);
 
-  const assignedAppliancesCount = userAppliances.filter(
-    (ua) => ua.roomId !== null && ua.roomId !== undefined
-  ).length;
+  const baseAppliancesByName = useMemo(() => {
+    return new Map(catalogue.map((appliance) => [appliance.name, appliance]));
+  }, [catalogue]);
 
-  // Filter by search + room
-  const filteredAppliances = userAppliances.filter((ua) => {
-    const label = (ua.customName || ua.applianceName || "").toLowerCase();
-    const matchesSearch = label.includes(searchTerm.toLowerCase());
+  const findBaseAppliance = useCallback(
+    (applianceName) => baseAppliancesByName.get(applianceName),
+    [baseAppliancesByName]
+  );
 
-    const roomId = ua.roomId || null;
-    let matchesRoom = true;
+  const roomOptions = useMemo(
+    () =>
+      rooms.map((r) => ({
+        id: r.id,
+        name: r.name,
+        floorLabel: r.floorLabel,
+      })),
+    [rooms]
+  );
 
-    if (selectedRoomFilter === "none") {
-      matchesRoom = roomId === null;
-    } else if (selectedRoomFilter) {
-      matchesRoom = roomId !== null && roomId === Number(selectedRoomFilter);
-    }
+  const assignedAppliancesCount = useMemo(
+    () =>
+      userAppliances.filter(
+        (ua) => ua.roomId !== null && ua.roomId !== undefined
+      ).length,
+    [userAppliances]
+  );
 
-    return matchesSearch && matchesRoom;
-  });
+  const roomNameById = useMemo(() => {
+    return new Map(roomOptions.map((room) => [room.id, room.name]));
+  }, [roomOptions]);
+
+  const filteredAppliances = useMemo(() => {
+    // Filtering and sorting can run often while typing, so keep the search
+    // debounced and derive the visible list in one memoized pass.
+    const search = debouncedSearchTerm.trim().toLowerCase();
+
+    return userAppliances
+      .filter((ua) => {
+        const label = (ua.customName || ua.applianceName || "").toLowerCase();
+        const roomLabel = (ua.roomName || roomNameById.get(ua.roomId) || "").toLowerCase();
+        const matchesSearch =
+          search === "" || label.includes(search) || roomLabel.includes(search);
+
+        const roomId = ua.roomId || null;
+        let matchesRoom = true;
+
+        if (selectedRoomFilter === "none") {
+          matchesRoom = roomId === null;
+        } else if (selectedRoomFilter) {
+          matchesRoom = roomId !== null && roomId === Number(selectedRoomFilter);
+        }
+
+        return matchesSearch && matchesRoom;
+      })
+      .sort((a, b) => {
+        if (sortMode === "name-asc") {
+          return (a.customName || a.applianceName || "").localeCompare(
+            b.customName || b.applianceName || ""
+          );
+        }
+        if (sortMode === "room-asc") {
+          return (a.roomName || "Unassigned").localeCompare(b.roomName || "Unassigned");
+        }
+        if (sortMode === "kwh-desc") {
+          return Number(b.dailyKWh || 0) - Number(a.dailyKWh || 0);
+        }
+        return Number(b.estimatedDailyCost || 0) - Number(a.estimatedDailyCost || 0);
+      });
+  }, [debouncedSearchTerm, roomNameById, selectedRoomFilter, sortMode, userAppliances]);
 
   // Add new appliance from catalogue (initially unassigned to any room)
   const handleAddAppliance = async () => {
@@ -168,8 +231,8 @@ export default function MyAppliances() {
   };
 
   // Update appliance (usage, name, room)
-  const handleUpdateAppliance = async (id, updatedFields) => {
-    const existing = userAppliances.find((ua) => ua.id === id);
+  const handleUpdateAppliance = useCallback(async (id, updatedFields) => {
+    const existing = userAppliancesRef.current.find((ua) => ua.id === id);
     if (!existing) return;
 
     try {
@@ -211,10 +274,10 @@ export default function MyAppliances() {
     } catch (err) {
       setError(err.message || "Failed to update appliance.");
     }
-  };
+  }, [API_BASE, fetchWithAuth]);
 
   // Delete appliance
-  const handleRemoveAppliance = async (id) => {
+  const handleRemoveAppliance = useCallback(async (id) => {
     if (!window.confirm("Remove this appliance?")) return;
 
     try {
@@ -231,11 +294,49 @@ export default function MyAppliances() {
     } catch (err) {
       setError(err.message || "Failed to remove appliance.");
     }
-  };
+  }, [API_BASE, fetchWithAuth]);
 
   const handleSave = () => {
-    setIsRefreshing(true);
-    window.location.reload();
+    setSaveMessage("All appliance changes are saved.");
+    window.setTimeout(() => setSaveMessage(""), 2200);
+  };
+
+  const handleExportCsv = () => {
+    const headers = [
+      "Name",
+      "Base appliance",
+      "Usage type",
+      "Room",
+      "Hours per day",
+      "Uses per day",
+      "Daily kWh",
+      "Estimated daily cost",
+    ];
+
+    const rows = userAppliances.map((appliance) => [
+      appliance.customName || appliance.applianceName || "Appliance",
+      appliance.applianceName || "",
+      appliance.usageType || "",
+      appliance.roomName || "Unassigned",
+      appliance.hoursPerDay ?? "",
+      appliance.usesPerDay ?? "",
+      Number(appliance.dailyKWh || 0).toFixed(2),
+      Number(appliance.estimatedDailyCost || 0).toFixed(2),
+    ]);
+
+    const csv = [headers, ...rows]
+      .map((row) => row.map(csvEscape).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "currently-appliances.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   };
 
   if (loading) {
@@ -307,6 +408,20 @@ export default function MyAppliances() {
               ))}
             </select>
           </div>
+
+          <div className="sort-filter">
+            <select
+              className="room-select"
+              value={sortMode}
+              onChange={(e) => setSortMode(e.target.value)}
+              aria-label="Sort appliances"
+            >
+              <option value="cost-desc">Highest daily cost</option>
+              <option value="kwh-desc">Highest daily kWh</option>
+              <option value="name-asc">Name A to Z</option>
+              <option value="room-asc">Room A to Z</option>
+            </select>
+          </div>
         </div>
 
         {/* Scrollable box with cards */}
@@ -325,8 +440,9 @@ export default function MyAppliances() {
 
             {filteredAppliances.length === 0 && (
               <p className="empty-state">
-                No appliances found. Adjust your search/room filter or click
-                “+ Add Appliance”.
+                {userAppliances.length === 0
+                  ? 'No appliances added yet. Click "+ Add Appliance" to start tracking usage.'
+                  : 'No appliances match these filters. Try another search, room, or sort option.'}
               </p>
             )}
           </div>
@@ -334,12 +450,19 @@ export default function MyAppliances() {
 
         {/* Action button under the grey box */}
         <div className="actions">
+          {saveMessage && <span className="save-message">{saveMessage}</span>}
           <button
             className="save-btn"
             onClick={handleSave}
-            disabled={isRefreshing}
           >
-            {isRefreshing ? "Saving..." : "Save"}
+            Save
+          </button>
+          <button
+            className="export-btn"
+            onClick={handleExportCsv}
+            disabled={userAppliances.length === 0}
+          >
+            Export CSV
           </button>
           <button
             className="add-btn"

@@ -1,5 +1,5 @@
 // src/private/myappliances/appliancecard.jsx
-import React from "react";
+import React, { useCallback } from "react";
 import "./css/appliancecard.css";
 
 /*
@@ -16,26 +16,30 @@ import "./css/appliancecard.css";
  *  - onRemove(id)
  */
 
-export default function ApplianceCard({
+function ApplianceCard({
   appliance,
   baseAppliance,
   rooms,
   onUpdate,
   onRemove,
 }) {
-  const normaliseWholeNumber = (value, { max } = {}) => {
-    if (value === "") return null;
+  const normaliseWholeNumber = (value, { min = 1, max } = {}) => {
+    if (value === "") return undefined;
 
     const parsed = Number.parseInt(value, 10);
-    if (Number.isNaN(parsed)) return null;
+    if (Number.isNaN(parsed)) return undefined;
 
-    const boundedValue = Math.max(0, parsed);
+    const boundedValue = Math.max(min, parsed);
     return max !== undefined ? Math.min(boundedValue, max) : boundedValue;
   };
 
-  const handleChange = (field, value) => {
-    onUpdate(appliance.id, { [field]: value });
-  };
+  const handleChange = useCallback(
+    (field, value) => {
+      if (value === undefined) return;
+      onUpdate(appliance.id, { [field]: value });
+    },
+    [appliance.id, onUpdate]
+  );
 
   const isContinuous = appliance.usageType === "continuous";
   const currentRoomId = appliance.roomId ?? null;
@@ -104,7 +108,7 @@ export default function ApplianceCard({
         {isContinuous ? (
           <input
             type="number"
-            min="0"
+            min="1"
             max="24"
             step="1"
             inputMode="numeric"
@@ -129,7 +133,7 @@ export default function ApplianceCard({
         ) : (
           <input
             type="number"
-            min="0"
+            min="1"
             step="1"
             inputMode="numeric"
             value={appliance.usesPerDay ?? ""}
@@ -146,3 +150,5 @@ export default function ApplianceCard({
     </div>
   );
 }
+
+export default React.memo(ApplianceCard);

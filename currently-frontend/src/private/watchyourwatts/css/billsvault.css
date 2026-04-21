@@ -56,6 +56,34 @@
   border-left: 4px solid var(--color-accent);
 }
 
+.vault-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.vault-summary-card {
+  padding: 1rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #FFFFFF;
+}
+
+.vault-summary-card span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #64748B;
+  font-size: 0.8rem;
+  font-weight: 650;
+  text-transform: uppercase;
+}
+
+.vault-summary-card strong {
+  color: var(--color-text);
+  font-size: 1.05rem;
+}
+
 /* Inputs */
 .vault-input {
   display: block;
@@ -284,5 +312,9 @@
   .vault-file-actions {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .vault-summary-grid {
+    grid-template-columns: 1fr;
   }
 }

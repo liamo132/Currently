@@ -80,9 +80,6 @@ The following changes were made:
 - updated the uniqueness test to check duplicate `emailHash` values
 - this matches the current persistence design more accurately for the test environment
 
-## Retest Result
-After making the fixes, the full test suite was run again:
-
 The final result was:
 
 - Tests run: `39`

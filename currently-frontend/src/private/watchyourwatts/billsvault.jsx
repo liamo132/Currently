@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import './css//BillsVault.css';
 
 export default function BillsVault() {
@@ -14,6 +14,21 @@ export default function BillsVault() {
   const [info, setInfo] = useState('');
   const [sessionPin, setSessionPin] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const fileSummary = useMemo(() => {
+    const totalBytes = files.reduce((sum, f) => sum + Number(f.fileSize || 0), 0);
+    const newest = files
+      .map((f) => f.uploadedAt)
+      .filter(Boolean)
+      .sort()
+      .at(-1);
+
+    return {
+      count: files.length,
+      totalMb: totalBytes / (1024 * 1024),
+      newestLabel: newest ? new Date(newest).toLocaleDateString() : 'No uploads yet',
+    };
+  }, [files]);
 
   const fetchWithAuth = useCallback(async (url, options = {}) => {
     const token = localStorage.getItem('token');
@@ -106,7 +121,7 @@ export default function BillsVault() {
       setPin('');
       setStep('unlocked');
       loadFiles(pin);
-    } catch (err) {
+    } catch {
       setError('Incorrect PIN.');
     } finally {
       setIsLoading(false);
@@ -318,6 +333,21 @@ export default function BillsVault() {
 
       {error && <div className="vault-alert vault-alert-error">{error}</div>}
       {info && <div className="vault-alert vault-alert-success">{info}</div>}
+
+      <div className="vault-summary-grid">
+        <div className="vault-summary-card">
+          <span>Bills stored</span>
+          <strong>{fileSummary.count}</strong>
+        </div>
+        <div className="vault-summary-card">
+          <span>Storage used</span>
+          <strong>{fileSummary.totalMb.toFixed(2)} MB</strong>
+        </div>
+        <div className="vault-summary-card">
+          <span>Newest bill</span>
+          <strong>{fileSummary.newestLabel}</strong>
+        </div>
+      </div>
 
       <div className="vault-upload-section">
         <input

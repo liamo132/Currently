@@ -13,7 +13,6 @@ import '../shared/private-layout.css';
 
 import './css/dashboard.css';
 
-// student note: keeping these helper functions here stops us repeating maths in 4 places
 const sumDailyKwh = (appliances = []) =>
   (appliances || []).reduce((sum, a) => sum + Number(a.dailyKWh || 0), 0);
 
@@ -27,7 +26,6 @@ export default function Dashboard() {
   const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
   const navigate = useNavigate();
 
-  const [user, setUser] = useState(null);
   const [rooms, setRooms] = useState([]);
   const [appliances, setAppliances] = useState([]);
   const [vaultActive, setVaultActive] = useState(false);
@@ -73,7 +71,7 @@ export default function Dashboard() {
     return res;
   }, []);
 
-  const handleAuthError = (err) => {
+  const handleAuthError = useCallback((err) => {
     if (err?.status === 401 || err?.status === 403) {
       localStorage.removeItem('token');
       setError('Session expired. Please log in again.');
@@ -82,15 +80,15 @@ export default function Dashboard() {
       return true;
     }
     return false;
-  };
+  }, [navigate]);
 
-  const normalizeVaultActive = (payload, fallback) => {
+  const normalizeVaultActive = useCallback((payload, fallback) => {
     if (!payload || typeof payload !== 'object') return fallback;
     if (payload.active !== undefined) return Boolean(payload.active);
     if (payload.status) return String(payload.status).toLowerCase() === 'active';
     if (payload.enabled !== undefined) return Boolean(payload.enabled);
     return fallback;
-  };
+  }, []);
 
   // Keep a client-side cache in sync with the persisted backend value.
   useEffect(() => {
@@ -158,7 +156,7 @@ export default function Dashboard() {
     };
 
     load();
-  }, [API_BASE, fetchWithAuth, vaultActive]);
+  }, [API_BASE, fetchWithAuth, handleAuthError, normalizeVaultActive]);
 
   const persistEnergySettings = useCallback(
     async (nextPrice, nextProvider) => {

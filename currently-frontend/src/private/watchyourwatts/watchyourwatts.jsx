@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import HeaderUser from '../../public/components/header-user';
 import RoomConsumption from './roomconsumption';
+import RoomSummaryCards from './roomsummarycards';
 import BiggestEaters from './biggesteaters';
 import CostForecast from './costforecast';
 import BillsVault from './billsvault';
@@ -14,6 +15,7 @@ export default function WatchYourWatts() {
 
   const [activeTab, setActiveTab] = useState('usage');
   const [reductionPercent, setReductionPercent] = useState(10);
+  const [costPeriod, setCostPeriod] = useState('weekly');
 
   const [rooms, setRooms] = useState([]);
   const [appliances, setAppliances] = useState([]);
@@ -52,9 +54,34 @@ export default function WatchYourWatts() {
       { id: 'usage', label: 'Usage Breakdown' },
       { id: 'cost', label: 'Cost Forecast' },
       { id: 'bills', label: 'Bills Vault' },
+      { id: 'rooms', label: 'Room Summary' },
     ],
     []
   );
+
+  const costComparison = useMemo(() => {
+    const pct = Math.min(10, Math.max(1, Number(reductionPercent) || 1));
+    const targetFraction = pct / 100;
+    const daily = appliancesWithCost.reduce(
+      (sum, appliance) => sum + Number(appliance.computedDailyCost || 0),
+      0
+    );
+
+    const buildPeriod = (current) => {
+      const saving = current * targetFraction;
+      return {
+        current,
+        optimized: current - saving,
+        saving,
+      };
+    };
+
+    return {
+      daily: buildPeriod(daily),
+      weekly: buildPeriod(daily * 7),
+      monthly: buildPeriod(daily * 30),
+    };
+  }, [appliancesWithCost, reductionPercent]);
 
   const fetchWithAuth = useCallback(async (url, options = {}) => {
     const token = localStorage.getItem('token');
@@ -183,6 +210,33 @@ export default function WatchYourWatts() {
                   onChange={(e) => setReductionPercent(Number(e.target.value || 1))}
                 />
               </label>
+              <label className="watchtabs-label">
+                Cost view
+                <select
+                  className="watchtabs-input watchtabs-input--wide"
+                  value={costPeriod}
+                  onChange={(e) => setCostPeriod(e.target.value)}
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="cost-period-summary">
+              <div className="cost-period-card">
+                <span>{costPeriod} current</span>
+                <strong>EUR {costComparison[costPeriod].current.toFixed(2)}</strong>
+              </div>
+              <div className="cost-period-card">
+                <span>After {Math.min(10, Math.max(1, Number(reductionPercent) || 1))}% target</span>
+                <strong>EUR {costComparison[costPeriod].optimized.toFixed(2)}</strong>
+              </div>
+              <div className="cost-period-card cost-period-card--saving">
+                <span>Potential saving</span>
+                <strong>EUR {costComparison[costPeriod].saving.toFixed(2)}</strong>
+              </div>
             </div>
 
             <CostForecast
@@ -197,6 +251,10 @@ export default function WatchYourWatts() {
           <div style={{ marginTop: '1.5rem' }}>
             <BillsVault />
           </div>
+        )}
+
+        {activeTab === 'rooms' && (
+          <RoomSummaryCards rooms={rooms} appliances={appliancesWithCost} />
         )}
       </div>
     </div>

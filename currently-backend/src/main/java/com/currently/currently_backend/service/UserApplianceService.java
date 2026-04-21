@@ -26,7 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -88,9 +91,10 @@ public class UserApplianceService {
         User user = getCurrentUser();
         double pricePerKwh = resolvePricePerKwh(user);
         List<UserAppliance> entities = userApplianceRepository.findByUserOrderByCreatedAtAsc(user);
+        Map<String, Appliance> catalogueByName = catalogueByName();
 
         return entities.stream()
-                .map(entity -> mapToResponseWithDerivedValues(entity, pricePerKwh))
+                .map(entity -> mapToResponseWithDerivedValues(entity, pricePerKwh, catalogueByName))
                 .collect(Collectors.toList());
     }
 
@@ -145,7 +149,7 @@ public class UserApplianceService {
 
         UserAppliance saved = userApplianceRepository.save(entity);
         double pricePerKwh = resolvePricePerKwh(user);
-        return mapToResponseWithDerivedValues(saved, pricePerKwh);
+        return mapToResponseWithDerivedValues(saved, pricePerKwh, catalogueByName());
 
     }
 
@@ -205,7 +209,7 @@ public class UserApplianceService {
 
         UserAppliance updated = userApplianceRepository.save(entity);
         double pricePerKwh = resolvePricePerKwh(user);
-        return mapToResponseWithDerivedValues(updated, pricePerKwh);
+        return mapToResponseWithDerivedValues(updated, pricePerKwh, catalogueByName());
 
     }
 
@@ -271,7 +275,11 @@ public class UserApplianceService {
         }
     }
 
-    private UserApplianceResponse mapToResponseWithDerivedValues(UserAppliance entity, double pricePerKwh) {
+    private UserApplianceResponse mapToResponseWithDerivedValues(
+            UserAppliance entity,
+            double pricePerKwh,
+            Map<String, Appliance> catalogueByName
+    ) {
         UserApplianceResponse response = new UserApplianceResponse();
         response.setId(entity.getId());
         response.setApplianceName(entity.getApplianceName());
@@ -280,7 +288,7 @@ public class UserApplianceService {
         response.setHoursPerDay(entity.getHoursPerDay());
         response.setUsesPerDay(entity.getUsesPerDay());
 
-        Appliance baseAppliance = findBaseApplianceOrThrow(entity.getApplianceName());
+        Appliance baseAppliance = findBaseApplianceOrThrow(entity.getApplianceName(), catalogueByName);
 
         double dailyKWh = calculateDailyKWh(entity, baseAppliance);
         response.setDailyKWh(dailyKWh);
@@ -294,6 +302,25 @@ public class UserApplianceService {
         }
 
         return response;
+    }
+
+    private Map<String, Appliance> catalogueByName() {
+        // Build the lookup once per service call. This keeps DTO mapping O(n)
+        // instead of repeatedly scanning the full catalogue for every appliance.
+        return applianceService.getAllAppliances().stream()
+                .collect(Collectors.toMap(
+                        appliance -> normalizeCatalogueKey(appliance.getName()),
+                        Function.identity(),
+                        (first, ignoredDuplicate) -> first
+                ));
+    }
+
+    private Appliance findBaseApplianceOrThrow(String applianceName, Map<String, Appliance> catalogueByName) {
+        Appliance match = catalogueByName.get(normalizeCatalogueKey(applianceName));
+        if (match == null) {
+            throw new IllegalArgumentException("Appliance not found in catalogue: " + applianceName);
+        }
+        return match;
     }
 
     private String normalizeNullableText(String value) {
@@ -310,6 +337,10 @@ public class UserApplianceService {
             return userPrice;
         }
         return DEFAULT_PRICE_PER_KWH;
+    }
+
+    private String normalizeCatalogueKey(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 
 

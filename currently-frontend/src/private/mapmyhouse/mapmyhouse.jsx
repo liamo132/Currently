@@ -30,9 +30,6 @@ export default function MapMyHouse() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  // NEW: appliances assigned to rooms
-  const [userAppliances, setUserAppliances] = useState([]);
-
   /**
    * Helper: authenticated fetch
    */
@@ -140,8 +137,6 @@ useEffect(() => {
         `${API_BASE}/api/users/me/appliances`
       );
       const appliancesData = await appliancesRes.json();
-
-      setUserAppliances(appliancesData);
 
       // 3) Build house structure with real appliance counts
       const houseData = buildHouseFromRooms(roomsData, appliancesData);

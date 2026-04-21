@@ -25,18 +25,17 @@ const CostForecast = ({
     const pct = clamp(Number(reductionPercent) || 1, 1, 10);
     const targetFraction = pct / 100;
 
-    // 1. Baseline WEEKLY cost (recompute with latest price if dailyKWh is present)
-    const weeklyCost =
-      appliances.reduce((sum, a) => {
-        const dailyKwh = Number(a.dailyKWh || 0);
-        const computed = Number(a.computedDailyCost ?? dailyKwh * pricePerKwh);
-        const fallback = Number(a.estimatedDailyCost || 0);
-        const dailyCost = Number.isFinite(computed) && computed > 0 ? computed : fallback;
-        return sum + dailyCost;
-      }, 0) * 7;
+    // Recompute from daily kWh where possible so Dashboard price changes flow through.
+    const dailyCost = appliances.reduce((sum, a) => {
+      const dailyKwh = Number(a.dailyKWh || 0);
+      const computed = Number(a.computedDailyCost ?? dailyKwh * pricePerKwh);
+      const fallback = Number(a.estimatedDailyCost || 0);
+      const applianceDailyCost = Number.isFinite(computed) && computed > 0 ? computed : fallback;
+      return sum + applianceDailyCost;
+    }, 0);
 
-    // 2. Monthly baseline
-    const monthlyCost = weeklyCost * 4;
+    const weeklyCost = dailyCost * 7;
+    const monthlyCost = dailyCost * 30;
 
     // 3. Total savings target
     const totalSavings = monthlyCost * targetFraction;

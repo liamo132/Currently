@@ -9,6 +9,7 @@ package com.currently.currently_backend.repository;
 
 import com.currently.currently_backend.model.User;
 import com.currently.currently_backend.model.UserAppliance;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -19,6 +20,8 @@ import java.util.List;
  */
 public interface UserApplianceRepository extends JpaRepository<UserAppliance, Long> {
 
-    // Find all appliances belonging to a specific user
+    // Fetch the optional room in the same database round trip so DTO mapping
+    // does not accidentally trigger one extra query per appliance.
+    @EntityGraph(attributePaths = "room")
     List<UserAppliance> findByUserOrderByCreatedAtAsc(User user);
 }
