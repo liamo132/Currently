@@ -129,7 +129,7 @@
     "name": "Tumble Dryer",
     "category": "Utility",
     "usageType": "perUse",
-    "averageWattsPerUse": 950,
+    "averageWattsPerUse": 1700,
     "defaultUsesPerDay": 1
   },
   {
