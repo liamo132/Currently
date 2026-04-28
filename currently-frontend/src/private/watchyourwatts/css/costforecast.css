@@ -86,14 +86,24 @@
 }
 
 @media (max-width: 768px) {
+  .cost-forecast-card {
+    padding: 1.25rem;
+  }
+
+  .cost-forecast-title {
+    font-size: 1.2rem;
+    line-height: 1.3;
+  }
+
   .room-legend {
     grid-template-columns: 1fr;
   }
-  .appliance-row {
-    flex-wrap: wrap;
+
+  .savings-card {
+    padding: 1rem;
   }
-  .reduce-btn {
-    width: 100%;
-    margin-top: 1rem;
+
+  .savings-amount {
+    font-size: 1.45rem;
   }
 }

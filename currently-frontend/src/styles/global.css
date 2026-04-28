@@ -21,12 +21,21 @@ body,
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
   font-family: "Montserrat", sans-serif;
   color: var(--color-text);
   background: var(--color-white);
+  overflow-x: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 a {
@@ -221,6 +230,15 @@ a {
 }
 
 @media (max-width: 640px) {
+  .site-nav {
+    width: min(100% - 1rem, 1200px);
+    gap: 0.55rem;
+  }
+
+  .logo {
+    font-size: 1.35rem;
+  }
+
   .site-nav-links {
     gap: 0.8rem;
   }
@@ -238,5 +256,16 @@ a {
     height: 36px;
     padding: 0 0.7rem;
     font-size: 0.83rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .site-nav-actions {
+    gap: 0.35rem;
+  }
+
+  .btn-nav {
+    padding: 0 0.55rem;
+    font-size: 0.78rem;
   }
 }

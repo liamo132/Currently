@@ -8,7 +8,7 @@
 .watchyourwatts-content {
   padding: 3rem 2rem 4rem;
   max-width: 1400px;
-  margin-top: 70px;
+  margin-top: 0;
   min-height: 60vh;
   margin-left: auto;
   margin-right: auto;
@@ -74,7 +74,7 @@
 
 @media (max-width: 768px) {
   .watchyourwatts-content {
-    padding: 1rem;
+    padding: 1.5rem 1rem 2.5rem;
   }
   .watchyourwatts-title {
     font-size: 1.875rem;

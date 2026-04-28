@@ -243,12 +243,29 @@
 }
 
 @media (max-width: 640px) {
+  .auth-shell {
+    min-height: auto;
+  }
+
   .auth-panel {
     padding: 1rem;
   }
 
+  .auth-panel-brand {
+    justify-content: flex-start;
+  }
+
+  .auth-panel-brand h1 {
+    font-size: 1.8rem;
+  }
+
+  .auth-panel-brand > p {
+    font-size: 0.92rem;
+  }
+
   .auth-panel-brand ul {
     gap: 0.5rem;
+    display: none;
   }
 
   .auth-panel-brand li {

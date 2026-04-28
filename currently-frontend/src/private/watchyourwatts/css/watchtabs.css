@@ -5,6 +5,7 @@
 .watchtabs-wrap {
   position: relative;
   display: inline-flex;
+  max-width: 100%;
   gap: 0.25rem;
   padding: 0.35rem;
   border-radius: 999px;
@@ -73,4 +74,39 @@
 
 .watchtabs-input--wide {
   width: 140px;
+}
+
+@media (max-width: 768px) {
+  .watchtabs-wrap {
+    display: flex;
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 0.75rem;
+    scrollbar-width: thin;
+  }
+
+  .watchtabs-indicator {
+    display: none;
+  }
+
+  .watchtabs-btn {
+    flex: 0 0 auto;
+    padding: 0.65rem 0.9rem;
+  }
+
+  .watchtabs-btn.active {
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+  }
+
+  .watchtabs-controls,
+  .watchtabs-label {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .watchtabs-input,
+  .watchtabs-input--wide {
+    width: 100%;
+  }
 }

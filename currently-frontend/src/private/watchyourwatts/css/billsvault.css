@@ -311,10 +311,24 @@
 
   .vault-file-actions {
     width: 100%;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-content: stretch;
   }
 
   .vault-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vault-btn,
+  .vault-btn-download,
+  .vault-btn-delete {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .vault-file-actions {
     grid-template-columns: 1fr;
   }
 }

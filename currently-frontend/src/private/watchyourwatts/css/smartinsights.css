@@ -140,3 +140,16 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 640px) {
+  .smartinsights-control-row,
+  .smartinsights-meta {
+    flex-direction: column;
+  }
+
+  .smartinsights-select,
+  .smartinsights-btn {
+    width: 100%;
+    min-width: 0;
+  }
+}

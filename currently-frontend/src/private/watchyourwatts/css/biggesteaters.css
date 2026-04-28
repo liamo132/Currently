@@ -104,3 +104,32 @@
 .reduce-btn:active {
   transform: scale(0.98);
 }
+
+@media (max-width: 768px) {
+  .biggest-eaters-card {
+    padding: 1.25rem;
+  }
+
+  .biggest-eaters-title {
+    font-size: 1.2rem;
+    line-height: 1.3;
+  }
+
+  .appliance-row {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .appliance-rank {
+    margin-right: 0;
+  }
+
+  .appliance-info {
+    min-width: 0;
+    flex: 1 1 calc(100% - 56px);
+  }
+
+  .reduce-btn {
+    width: 100%;
+  }
+}

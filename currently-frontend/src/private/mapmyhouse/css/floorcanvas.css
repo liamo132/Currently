@@ -12,6 +12,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
 }
 
 .floorcanvas-title {
@@ -179,4 +180,31 @@
 .icon-sm {
   width: 1rem;
   height: 1rem;
+}
+
+@media (max-width: 640px) {
+  .floorcanvas-container {
+    padding: 1rem;
+  }
+
+  .floorcanvas-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .floorcanvas-add-btn {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .room-grid {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 260px;
+  }
+
+  .room-empty-state {
+    height: 260px;
+    padding: 1rem;
+    text-align: center;
+  }
 }

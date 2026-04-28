@@ -14,7 +14,7 @@
 
 .private-content {
   max-width: 1400px;
-  margin: 70px auto 0;
+  margin: 0 auto;
   padding: 3rem 2rem 4rem;
   animation: fadeInUp 0.4s ease-out;
   /* added fadeinup so every private page enters like dashboard */
@@ -55,5 +55,26 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .private-content {
+    padding: 1.5rem 1rem 2.5rem;
+  }
+
+  .private-title {
+    font-size: 1.85rem;
+    line-height: 1.15;
+  }
+
+  .private-subtitle {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    margin-bottom: 1.4rem;
+  }
+
+  .private-card {
+    padding: 1.25rem;
   }
 }
