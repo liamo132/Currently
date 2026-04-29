@@ -73,17 +73,6 @@ export default function Features() {
         </div>
       </section>
 
-      <section className="final-cta">
-        <div className="landing-container final-cta-inner">
-          <h2>Start reducing avoidable energy spend this week.</h2>
-          <p>Create your account and go straight to your first savings plan.</p>
-
-          <div className="hero-ctas">
-            <a className="hero-btn hero-btn-primary" href="/signup">Create free account</a>
-            <a className="hero-btn hero-btn-secondary" href="/login">I already have an account</a>
-          </div>
-        </div>
-      </section>
     </>
   );
 }

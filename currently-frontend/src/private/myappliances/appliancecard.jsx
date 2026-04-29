@@ -1,5 +1,5 @@
 // src/private/myappliances/appliancecard.jsx
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import "./css/appliancecard.css";
 
 /*
@@ -33,6 +33,24 @@ function ApplianceCard({
     return max !== undefined ? Math.min(boundedValue, max) : boundedValue;
   };
 
+  const normaliseDecimalNumber = (value, { min = 0.01, max } = {}) => {
+    if (value === "") return undefined;
+
+    const parsed = Number.parseFloat(value);
+    if (Number.isNaN(parsed)) return undefined;
+
+    const boundedValue = Math.max(min, parsed);
+    return max !== undefined ? Math.min(boundedValue, max) : boundedValue;
+  };
+
+  const formatNumberForInput = (value) => {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) {
+      return "";
+    }
+
+    return Number(value).toFixed(2).replace(/\.?0+$/, "");
+  };
+
   const handleChange = useCallback(
     (field, value) => {
       if (value === undefined) return;
@@ -43,6 +61,21 @@ function ApplianceCard({
 
   const isContinuous = appliance.usageType === "continuous";
   const currentRoomId = appliance.roomId ?? null;
+  const [useWeeklyInput, setUseWeeklyInput] = useState(false);
+
+  const handleUsesChange = (value) => {
+    const parsed = normaliseDecimalNumber(value, {
+      max: useWeeklyInput ? 700 : 100,
+    });
+
+    if (parsed === undefined) return;
+
+    handleChange("usesPerDay", useWeeklyInput ? parsed / 7 : parsed);
+  };
+
+  const displayedUses = useWeeklyInput
+    ? formatNumberForInput((appliance.usesPerDay ?? 0) * 7)
+    : formatNumberForInput(appliance.usesPerDay);
 
   return (
     <div className="appliance-card">
@@ -127,24 +160,35 @@ function ApplianceCard({
       </div>
 
       <div className={`field-group ${isContinuous ? "field-group--inactive" : ""}`}>
-        <label>Uses per day</label>
+        <label>{useWeeklyInput ? "Uses per week" : "Uses per day"}</label>
         {isContinuous ? (
           <div className="input-field input-field--inactive">N/A</div>
         ) : (
-          <input
-            type="number"
-            min="1"
-            step="1"
-            inputMode="numeric"
-            value={appliance.usesPerDay ?? ""}
-            onChange={(e) =>
-              handleChange(
-                "usesPerDay",
-                normaliseWholeNumber(e.target.value)
-              )
-            }
-            className="input-field"
-          />
+          <>
+            <input
+              type="number"
+              min="0.01"
+              max={useWeeklyInput ? "700" : "100"}
+              step="0.01"
+              inputMode="decimal"
+              value={displayedUses}
+              onChange={(e) => handleUsesChange(e.target.value)}
+              className="input-field"
+            />
+            <label className="weekly-toggle">
+              <input
+                type="checkbox"
+                checked={useWeeklyInput}
+                onChange={(e) => setUseWeeklyInput(e.target.checked)}
+              />
+              Weekly usage
+            </label>
+            {useWeeklyInput && (
+              <span className="usage-equivalent">
+                {formatNumberForInput(appliance.usesPerDay)} uses/day
+              </span>
+            )}
+          </>
         )}
       </div>
     </div>

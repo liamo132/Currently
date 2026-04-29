@@ -217,7 +217,7 @@
     "defaultHoursPerDay": 4
   },
   {
-    "name": "Sky Q Box",
+    "name": "Sky Box",
     "category": "Living Room",
     "usageType": "continuous",
     "averageWatts": 18,
@@ -231,14 +231,14 @@
     "defaultHoursPerDay": 4
   },
   {
-    "name": "Smart Speaker (Always On)",
+    "name": "Alexa/Google Home (Always On)",
     "category": "Living Room",
     "usageType": "continuous",
     "averageWatts": 2,
     "defaultHoursPerDay": 24
   },
   {
-    "name": "27-inch Monitor (FHD)",
+    "name": "27-inch Monitor (1080p)",
     "category": "Living Room",
     "usageType": "continuous",
     "averageWatts": 22,
@@ -273,7 +273,7 @@
     "defaultHoursPerDay": 4
   },
   {
-    "name": "Portable Electric Heater",
+    "name": "Electric Heater",
     "category": "Bedroom",
     "usageType": "continuous",
     "averageWatts": 2000,
@@ -308,10 +308,59 @@
     "defaultUsesPerDay": 1
   },
   {
-    "name": "Bean-to-Cup Coffee Machine",
+    "name": "Coffee Machine",
     "category": "Kitchen",
     "usageType": "perUse",
     "averageWattsPerUse": 150,
     "defaultUsesPerDay": 2
+  },
+  {
+  "name": "Phone Charging Cycle",
+  "category": "Bedroom",
+  "usageType": "continuous",
+  "averageWatts": 5,
+  "defaultHoursPerDay": 1
+},
+{
+  "name": "Fire TV Stick",
+  "category": "Living Room",
+  "usageType": "continuous",
+  "averageWatts": 4,
+  "defaultHoursPerDay": 4
+},
+{
+    "name": "Fridge-Freezer",
+    "category": "Kitchen",
+    "usageType": "continuous",
+    "averageWatts": 50,
+    "defaultHoursPerDay": 24
+  },
+  {
+    "name": "Hob / Electric Stovetop",
+    "category": "Kitchen",
+    "usageType": "perUse",
+    "averageWattsPerUse": 1200,
+    "defaultUsesPerDay": 1
+  },
+  {
+    "name": "Set-Top Box / TV Recorder",
+    "category": "Living Room",
+    "usageType": "continuous",
+    "averageWatts": 18,
+    "defaultHoursPerDay": 24
+  },
+  {
+    "name": "Portable Air Conditioner",
+    "category": "Bedroom",
+    "usageType": "continuous",
+    "averageWatts": 1000,
+    "defaultHoursPerDay": 4
+  },
+  {
+    "name": "Iron",
+    "category": "Utility",
+    "usageType": "perUse",
+    "averageWattsPerUse": 470,
+    "defaultUsesPerDay": 1
   }
 ]
