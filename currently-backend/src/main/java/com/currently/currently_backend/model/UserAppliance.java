@@ -1,9 +1,10 @@
 /*
  * File: UserAppliance.java
  * Description: JPA entity representing an appliance selected by a specific user,
- *              including their customised usage patterns (hours per day or uses per day).
+ *              including customized usage patterns such as hours per day or uses per day.
+ * Project: Currently
  * Author: Liam Connell
- * Date: 2025-12-01
+ *
  */
 
 package com.currently.currently_backend.model;
@@ -12,15 +13,6 @@ import com.currently.currently_backend.persistence.EncryptedStringConverter;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/**
- * Entity: UserAppliance
- * Purpose: Link a User to a selected appliance from the base catalogue and
- *          store user-specific usage data to support energy estimation.
- * 
- * ref. SEAI Typical Appliance Energy Usage
- * Manufacturer specifications avg across 3 models where available
- * Energy Saving Trust (UK â€“ widely accepted academically)
- */
 @Entity
 @Table(
         name = "user_appliances",
@@ -35,35 +27,35 @@ public class UserAppliance {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Many user-appliances belong to one user
+    // Database relation: many Appliance selections belong to one authenticated User.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    //  link to a room (Map My House)
+    // Room relation: optional link to a Map My House Room for room-level summaries.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
     private Room room;
 
-    // We reference the base appliance by name as a key into appliances.json
+    // Appliance catalogue key: references the base appliance name in appliances.json.
     @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "appliance_name", nullable = false)
     private String applianceName;
 
-    // Optional user-friendly name e.g. "Kitchen Fridge", "Liam's Xbox"
+    // Frontend label: optional user-friendly name such as "Kitchen fridge".
     @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "custom_name")
     private String customName;
 
-    // Either "continuous" or "perUse" â€“ must match appliances.json usageType
+    // Usage model: either "continuous" or "perUse"; it must match appliances.json usageType.
     @Column(name = "usage_type", nullable = false)
     private String usageType;
 
-    // For continuous appliances (e.g. fridge, heater)
+    // Usage input: hours per day for continuous appliances such as fridges or heaters.
     @Column(name = "hours_per_day")
     private Double hoursPerDay;
 
-    // For per-use appliances (e.g. kettle, washing machine)
+    // Usage input: uses per day for per-use appliances such as kettles or washing machines.
     @Column(name = "uses_per_day")
     private Double usesPerDay;
 
@@ -73,7 +65,6 @@ public class UserAppliance {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // Constructors
     public UserAppliance() {
     }
 
@@ -89,10 +80,9 @@ public class UserAppliance {
         this.usageType = usageType;
         this.hoursPerDay = hoursPerDay;
         this.usesPerDay = usesPerDay;
-        // Timestamps will be filled by @PrePersist
     }
 
-    // Lifecycle callbacks for timestamps
+    // Database lifecycle: sets created/updated timestamps before first insert.
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
@@ -104,12 +94,11 @@ public class UserAppliance {
         }
     }
 
+    // Database lifecycle: refreshes updatedAt whenever the Appliance entity changes.
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
-    // Getters and setters
 
     public Long getId() {
         return id;

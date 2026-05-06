@@ -21,6 +21,10 @@ public class UserHashBackfill {
         this.userLookupHashService = userLookupHashService;
     }
 
+    /*
+     * Data migration helper: User hash backfill
+     * Purpose: On startup, fills missing email/username HMAC hashes so encrypted user fields remain searchable.
+     */
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void backfillMissingHashes() {

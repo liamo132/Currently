@@ -18,9 +18,11 @@ import java.util.List;
 import java.util.Map;
 
 /*
- * Bills Vault API:
- * - First time: user sets a 4-digit PIN
- * - Every action requires PIN (simple “second factor” on top of JWT)
+ * File: BillsVaultController.java
+ * Description: Handles the Bills Vault API for PIN-protected PDF upload, listing, download, and delete actions.
+ * Project: Currently
+ * Author: Liam Connell
+ *
  */
 @RestController
 @RequestMapping("/api/vault")
@@ -32,27 +34,31 @@ public class BillsVaultController {
         this.vaultService = vaultService;
     }
 
-    // Check if a PIN exists (frontend decides whether to show "create pin" UI)
+    // Controller API: tells the frontend whether this authenticated user has already created a Vault PIN.
     @GetMapping("/status")
     public ResponseEntity<?> status() {
         return ResponseEntity.ok(Map.of("pinSet", vaultService.hasPinSet()));
     }
 
-    // Set PIN (first time only)
+    // Controller API: sets the first 4-digit Bills Vault PIN after backend Validation.
     @PostMapping("/pin")
     public ResponseEntity<?> setPin(@Valid @RequestBody VaultPinRequest req) {
         vaultService.setPinFirstTime(req.getPin());
         return ResponseEntity.ok(Map.of("message", "PIN set successfully."));
     }
 
-    // Verify PIN (optional endpoint for "unlock" button)
+    // Controller API: unlocks the Bills Vault UI by verifying the submitted PIN against the stored hash.
     @PostMapping("/unlock")
     public ResponseEntity<?> unlock(@Valid @RequestBody VaultPinRequest req) {
         vaultService.verifyPinOrThrow(req.getPin());
         return ResponseEntity.ok(Map.of("unlocked", true));
     }
 
-    // Upload PDF: multipart + pin
+    /*
+     * Controller API: Bills Vault upload
+     * Purpose: Receives multipart PDF data plus the user's PIN, then delegates file type checks,
+     * Encryption, Database storage, and Audit Logging to BillsVaultService.
+     */
     @PostMapping(value = "/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BillFileResponse> upload(
             @RequestParam("pin") String pin,
@@ -61,13 +67,16 @@ public class BillsVaultController {
         return ResponseEntity.ok(vaultService.uploadPdf(pin, file));
     }
 
-    // List files
+    // Controller API: lists the authenticated user's saved bill metadata after PIN verification.
     @PostMapping("/files/list")
     public ResponseEntity<List<BillFileResponse>> list(@Valid @RequestBody VaultPinRequest req) {
         return ResponseEntity.ok(vaultService.listFiles(req.getPin()));
     }
 
-    // Download file
+    /*
+     * Controller API: Bills Vault download
+     * Purpose: Returns decrypted PDF bytes with no-store cache headers so sensitive bills are not cached by browsers.
+     */
     @PostMapping("/files/{id}/download")
     public ResponseEntity<byte[]> download(@PathVariable Long id, @Valid @RequestBody VaultPinRequest req) {
         BillFile bf = vaultService.getFileForDownload(req.getPin(), id);
@@ -83,7 +92,7 @@ public class BillsVaultController {
                 .body(bf.getData());
     }
 
-    // Delete file
+    // Controller API: deletes one bill owned by the authenticated user after PIN verification.
     @DeleteMapping("/files/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id, @RequestParam("pin") String pin) {
         vaultService.deleteFile(pin, id);

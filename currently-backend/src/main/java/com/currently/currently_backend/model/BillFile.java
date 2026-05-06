@@ -4,8 +4,11 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 /*
- * Stores a PDF bill for a specific user.
- * Student logic: we store metadata + file bytes in DB so migration to Postgres is easy later.
+ * File: BillFile.java
+ * Description: JPA entity for Bills Vault PDF metadata and encrypted file bytes stored in the Database.
+ * Project: Currently
+ * Author: Liam Connell
+ *
  */
 @Entity
 @Table(name = "bill_files")
@@ -29,21 +32,21 @@ public class BillFile {
     @Column(name = "file_size", nullable = false)
     private Long fileSize;
 
-    // Hash for integrity/dedup type stuff (not encryption)
+    // Security metadata: SHA-256 hash records file integrity information; it is not the encrypted PDF content.
     @Column(name = "sha256", nullable = false, length = 64)
     private String sha256;
 
     @Column(name = "uploaded_at", nullable = false)
     private LocalDateTime uploadedAt;
 
-    // Actual PDF bytes (works with both SQLite and Postgres)
+    // Vault data: encrypted PDF bytes are stored in the Database and decrypted only for download.
     @Basic(fetch = FetchType.LAZY)
     @Column(name = "data", nullable = false)
     private byte[] data;
 
     public BillFile() {}
 
-    // Getters/setters (manual because no Lombok)
+    // Standard JPA getters/setters used by repositories and services.
     public Long getId() { return id; }
 
     public User getUser() { return user; }

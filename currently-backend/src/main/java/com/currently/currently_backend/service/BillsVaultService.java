@@ -45,6 +45,10 @@ public class BillsVaultService {
         this.securityAuditService = securityAuditService;
     }
 
+    /*
+     * Service helper: resolves the authenticated user for Bills Vault actions.
+     * Important logic: JWT filter may store the full User principal; otherwise this falls back to email hash lookup.
+     */
     public User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -57,17 +61,24 @@ public class BillsVaultService {
                 .orElseThrow(() -> new RuntimeException("User not found for email: " + email));
     }
 
+    // Validation helper: enforces a simple 4-digit PIN format before hashing or checking Vault access.
     private void validatePinFormat(String pin) {
         if (pin == null || !pin.matches("^\\d{4}$")) {
             throw new IllegalArgumentException("PIN must be exactly 4 digits.");
         }
     }
 
+    // Service: returns whether the authenticated user has already created a Bills Vault PIN.
     public boolean hasPinSet() {
         User user = getCurrentUser();
         return user.getVaultPinHash() != null && !user.getVaultPinHash().isBlank();
     }
 
+    /*
+     * Service: Set first Vault PIN
+     * Purpose: Validates the submitted PIN, prevents resetting an existing PIN through this endpoint,
+     * hashes it with BCrypt, saves it on the User, and records Audit Logging.
+     */
     public void setPinFirstTime(String pin) {
         validatePinFormat(pin);
 
@@ -81,6 +92,11 @@ public class BillsVaultService {
         securityAuditService.logVaultAction(user.getId(), "vault_pin_set", "status=created");
     }
 
+    /*
+     * Service: Verify Vault PIN
+     * Purpose: Checks lockout state, confirms a PIN exists, compares the submitted PIN to the BCrypt hash,
+     * records success/failure Audit Logging, and rejects invalid access.
+     */
     public void verifyPinOrThrow(String pin) {
         validatePinFormat(pin);
 
@@ -100,6 +116,11 @@ public class BillsVaultService {
         securityAuditService.logVaultPinSuccess(user.getId(), "verify");
     }
 
+    /*
+     * Service: Upload PDF to Bills Vault
+     * Purpose: Requires a valid PIN, validates file presence, size, content type, extension, and PDF signature,
+     * encrypts PDF bytes, stores metadata and encrypted data in the Database, and logs the upload.
+     */
     public BillFileResponse uploadPdf(String pin, MultipartFile file) {
         verifyPinOrThrow(pin);
 
@@ -159,6 +180,7 @@ public class BillsVaultService {
         }
     }
 
+    // Service: lists this user's Bills Vault files after PIN verification without returning encrypted PDF bytes.
     public List<BillFileResponse> listFiles(String pin) {
         verifyPinOrThrow(pin);
         User user = getCurrentUser();
@@ -177,6 +199,11 @@ public class BillsVaultService {
                 .toList();
     }
 
+    /*
+     * Service: Download Vault file
+     * Purpose: Verifies the PIN, fetches the file by id and user id, decrypts the PDF bytes,
+     * records Audit Logging, and returns the file entity to the Controller.
+     */
     public BillFile getFileForDownload(String pin, Long fileId) {
         verifyPinOrThrow(pin);
         User user = getCurrentUser();
@@ -192,6 +219,7 @@ public class BillsVaultService {
         return billFile;
     }
 
+    // Service: deletes a Vault file only when the authenticated user owns the file and supplies the correct PIN.
     public void deleteFile(String pin, Long fileId) {
         verifyPinOrThrow(pin);
         User user = getCurrentUser();
@@ -207,12 +235,14 @@ public class BillsVaultService {
         );
     }
 
+    // Security helper: calculates a SHA-256 digest for file integrity metadata, not for encryption.
     private String sha256Hex(byte[] data) throws Exception {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] digest = md.digest(data);
         return HexFormat.of().formatHex(digest);
     }
 
+    // Upload Validation helper: confirms the PDF magic bytes "%PDF-" are present at the start of the upload.
     private boolean hasPdfSignature(byte[] bytes) {
         if (bytes == null || bytes.length < PDF_MAGIC.length) {
             return false;
@@ -225,6 +255,7 @@ public class BillsVaultService {
         return true;
     }
 
+    // Security helper: strips path separators and line breaks from uploaded filenames before Database storage.
     private String sanitizeFilename(String originalFilename) {
         if (originalFilename == null || originalFilename.isBlank()) {
             return "bill.pdf";

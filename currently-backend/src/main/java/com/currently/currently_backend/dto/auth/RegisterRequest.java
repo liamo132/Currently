@@ -5,6 +5,10 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+/*
+ * DTO: RegisterRequest
+ * Purpose: Validated account creation payload for Register.
+ */
 public class RegisterRequest {
 
     @NotBlank(message = "Username is required.")

@@ -17,12 +17,14 @@ public class EnergySettingsController {
         this.service = service;
     }
 
+    // Controller API: loads the current user's electricity tariff settings for Dashboard and Forecast calculations.
     @GetMapping
     public ResponseEntity<EnergySettingsResponse> getSettings() {
         EnergySettingsResponse res = service.getSettings();
         return ResponseEntity.ok(res);
     }
 
+    // Controller API: saves price-per-kWh and provider name used in Cost, Forecast, and Savings features.
     @PutMapping
     public ResponseEntity<EnergySettingsResponse> saveSettings(@Valid @RequestBody EnergySettingsRequest request) {
         EnergySettingsResponse res = service.saveSettings(request);

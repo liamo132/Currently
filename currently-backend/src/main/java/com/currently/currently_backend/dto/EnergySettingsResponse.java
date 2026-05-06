@@ -1,5 +1,9 @@
 package com.currently.currently_backend.dto;
 
+/*
+ * DTO: EnergySettingsResponse
+ * Purpose: Sends saved price-per-kWh and provider name back to the frontend.
+ */
 public class EnergySettingsResponse {
     private Double pricePerKwh;
     private String providerName;

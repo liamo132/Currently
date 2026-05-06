@@ -22,6 +22,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         this.objectMapper = objectMapper;
     }
 
+    // Security handler: returns JSON 401 responses when a protected API endpoint is called without Authentication.
     @Override
     public void commence(
             HttpServletRequest request,

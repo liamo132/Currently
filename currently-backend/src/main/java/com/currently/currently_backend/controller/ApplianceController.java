@@ -1,6 +1,7 @@
 /*
  * File: ApplianceController.java
  * Description: REST endpoints for retrieving appliance metadata.
+ * Project: Currently
  * Author: Liam Connell
  * Date: 2025-11-12
  *
@@ -29,6 +30,7 @@ public class ApplianceController {
         this.applianceService = applianceService;
     }
 
+    // Controller API: returns the public Appliance catalogue used by My Appliances and Watch Your Watts.
     @GetMapping
     public List<Appliance> getAllAppliances() {
         return applianceService.getAllAppliances();

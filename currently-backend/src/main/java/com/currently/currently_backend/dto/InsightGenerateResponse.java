@@ -2,6 +2,10 @@ package com.currently.currently_backend.dto;
 
 import java.util.List;
 
+/*
+ * DTO: InsightGenerateResponse
+ * Purpose: Wraps one batch of Smart Insights plus run state for the Generate More button.
+ */
 public class InsightGenerateResponse {
     private List<InsightDTO> insights;
     private String runId;

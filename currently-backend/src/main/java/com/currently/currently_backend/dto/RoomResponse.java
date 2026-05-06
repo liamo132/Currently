@@ -1,5 +1,9 @@
 package com.currently.currently_backend.dto;
 
+/*
+ * DTO: RoomResponse
+ * Purpose: Sends Room data from the backend to Map My House and Watch Your Watts.
+ */
 public class RoomResponse {
 
     private Long id;

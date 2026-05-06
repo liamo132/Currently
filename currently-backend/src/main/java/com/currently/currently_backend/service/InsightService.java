@@ -45,7 +45,7 @@ public class InsightService {
     private final ApplianceService applianceService;
     private final UserLookupHashService userLookupHashService;
 
-    // this in-memory run store keeps generate/more simple now, then we can swap this for postgres later
+    // Frontend State support: in-memory run store lets "Generate More" continue the same Smart Insights batch.
     private final Map<String, InsightRunState> runStore = new ConcurrentHashMap<>();
 
     public InsightService(
@@ -60,6 +60,11 @@ public class InsightService {
         this.userLookupHashService = userLookupHashService;
     }
 
+    /*
+     * Service: Generate Smart Insights
+     * Purpose: Builds energy-saving recommendations from the authenticated user's Appliance, Room, Usage, and tariff data.
+     * Output: First batch of ranked InsightDTOs plus a runId if more recommendations are available.
+     */
     @Transactional(readOnly = true)
     public InsightGenerateResponse generateInsights(InsightGenerateRequest request) {
         cleanupExpiredRuns();
@@ -96,6 +101,11 @@ public class InsightService {
         return nextBatch(runId, state);
     }
 
+    /*
+     * Service: Generate More Smart Insights
+     * Purpose: Uses runId to continue an existing recommendation run for the same authenticated user.
+     * Security check: rejects access if the run belongs to another user.
+     */
     public InsightGenerateResponse generateMore(String runId) {
         cleanupExpiredRuns();
 
@@ -112,6 +122,7 @@ public class InsightService {
         return nextBatch(runId, state);
     }
 
+    // Frontend State helper: returns the next four insights and advances the cursor for Generate More.
     private InsightGenerateResponse nextBatch(String runId, InsightRunState state) {
         if (state.cursor >= state.rankedInsights.size()) {
             return new InsightGenerateResponse(List.of(), runId, false, NO_MORE_REASON);
@@ -128,6 +139,11 @@ public class InsightService {
         return new InsightGenerateResponse(batch, runId, hasMore, stopReason);
     }
 
+    /*
+     * Savings ranking helper
+     * Purpose: Deduplicates similar recommendations, scores each idea by monthly impact, feasibility, and confidence,
+     * then filters out weak recommendations before applying variety caps.
+     */
     private List<RankedInsight> rankAndFilter(List<RawCandidate> rawCandidates) {
         if (rawCandidates.isEmpty()) {
             return List.of();
@@ -169,6 +185,7 @@ public class InsightService {
         return applyVarietyCaps(material);
     }
 
+    // Ranking helper: prevents one Appliance or category from dominating all Smart Insights results.
     private List<RankedInsight> applyVarietyCaps(List<RankedInsight> ranked) {
         Map<String, Integer> applianceCounts = new HashMap<>();
         Map<String, Integer> categoryCounts = new HashMap<>();
@@ -189,6 +206,7 @@ public class InsightService {
         return out;
     }
 
+    // DTO mapper: converts a raw recommendation into an InsightDTO with rounded weekly/monthly Savings values.
     private RankedInsight toRanked(RawCandidate raw, double maxImpact) {
         double impactNormalized = clamp(raw.impactMonthly() / Math.max(maxImpact, 0.01), 0.0, 1.0);
         double score = (0.60 * impactNormalized) + (0.25 * raw.feasibilityScore()) + (0.15 * raw.confidenceScore());
@@ -206,6 +224,7 @@ public class InsightService {
         return new RankedInsight(raw.key(), raw.applianceKey(), raw.category(), dto, score, raw.impactMonthly(), raw.feasibilityScore());
     }
 
+    // Candidate builder: creates Savings ideas for the user's highest daily Cost Appliances.
     private void addTopCostDriverCandidates(List<RawCandidate> out, List<ApplianceSnapshot> snapshots) {
         int topCount = Math.min(5, snapshots.size());
         for (int i = 0; i < topCount; i++) {
@@ -238,6 +257,7 @@ public class InsightService {
         }
     }
 
+    // Candidate builder: creates behaviour-change ideas for Appliances where usage habits strongly affect Cost.
     private void addBehaviourCandidates(List<RawCandidate> out, List<ApplianceSnapshot> snapshots) {
         List<ApplianceSnapshot> behaviourDevices = snapshots.stream()
                 .filter(s -> isBehaviourAppliance(s.applianceName()))
@@ -268,6 +288,7 @@ public class InsightService {
         }
     }
 
+    // Candidate builder: identifies always-on Appliances and recommends tuning settings rather than turning them off.
     private void addAlwaysOnCandidates(List<RawCandidate> out, List<ApplianceSnapshot> snapshots) {
         Optional<ApplianceSnapshot> alwaysOn = snapshots.stream()
                 .filter(ApplianceSnapshot::alwaysOn)
@@ -300,6 +321,7 @@ public class InsightService {
         ));
     }
 
+    // Candidate builder: groups Appliance Usage by Room to highlight the highest-impact Room for Watch Your Watts.
     private void addRoomCandidates(List<RawCandidate> out, List<ApplianceSnapshot> snapshots) {
         double totalKwh = snapshots.stream().mapToDouble(ApplianceSnapshot::dailyKwh).sum();
         if (totalKwh <= 0) {
@@ -351,6 +373,7 @@ public class InsightService {
         ));
     }
 
+    // Candidate builder: adds a tariff-focused recommendation based on the user's current total daily Cost.
     private void addTariffCandidates(List<RawCandidate> out, List<ApplianceSnapshot> snapshots, double pricePerKwh) {
         double totalDailyCost = snapshots.stream().mapToDouble(ApplianceSnapshot::dailyCost).sum();
         if (totalDailyCost <= 0) {
@@ -378,6 +401,11 @@ public class InsightService {
         ));
     }
 
+    /*
+     * Snapshot builder: Appliance Usage and Cost
+     * Purpose: Combines a UserAppliance entity with catalogue wattage and current pricePerKwh.
+     * Important calculation: dailyCost = calculated daily kWh multiplied by price per kWh.
+     */
     private ApplianceSnapshot toSnapshot(UserAppliance entity, double pricePerKwh) {
         Appliance base = findBaseApplianceOrThrow(entity.getApplianceName());
         double dailyKwh = calculateDailyKwh(entity, base);
@@ -399,6 +427,7 @@ public class InsightService {
         );
     }
 
+    // Catalogue helper: finds base Appliance wattage data from appliances.json by appliance name.
     private Appliance findBaseApplianceOrThrow(String applianceName) {
         return applianceService.getAllAppliances().stream()
                 .filter(a -> a.getName().equalsIgnoreCase(applianceName))
@@ -406,6 +435,11 @@ public class InsightService {
                 .orElseThrow(() -> new IllegalArgumentException("Appliance not found in catalogue: " + applianceName));
     }
 
+    /*
+     * Cost Calculation: daily kWh
+     * Purpose: Converts Appliance usage into daily kWh for Smart Insights.
+     * Formula: continuous = watts * hoursPerDay / 1000; perUse = wattHoursPerUse * usesPerDay / 1000.
+     */
     private double calculateDailyKwh(UserAppliance entity, Appliance baseAppliance) {
         if ("continuous".equalsIgnoreCase(entity.getUsageType())) {
             double watts = baseAppliance.getAverageWatts();
@@ -422,6 +456,7 @@ public class InsightService {
         return 0.0;
     }
 
+    // Classification helper: flags Appliances where user behaviour can noticeably change energy Cost.
     private boolean isBehaviourAppliance(String applianceName) {
         String n = applianceName.toLowerCase(Locale.ROOT);
         return n.contains("dryer")
@@ -431,6 +466,7 @@ public class InsightService {
                 || n.contains("oven");
     }
 
+    // Classification helper: detects continuous or commonly always-on devices for different Savings logic.
     private boolean isAlwaysOn(UserAppliance entity) {
         String usageType = entity.getUsageType() != null ? entity.getUsageType().toLowerCase(Locale.ROOT) : "";
         String name = entity.getApplianceName() != null ? entity.getApplianceName().toLowerCase(Locale.ROOT) : "";
@@ -447,11 +483,13 @@ public class InsightService {
                 || name.contains("server");
     }
 
+    // Frontend State helper: removes expired Smart Insights runs so stale runIds do not live forever.
     private void cleanupExpiredRuns() {
         LocalDateTime now = LocalDateTime.now();
         runStore.entrySet().removeIf(entry -> Duration.between(entry.getValue().createdAt, now).compareTo(RUN_TTL) > 0);
     }
 
+    // Service helper: resolves the authenticated user from the JWT principal before Insight database queries.
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String emailOrUsername = auth.getName();
@@ -460,6 +498,7 @@ public class InsightService {
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
     }
 
+    // Cost helper: request tariff overrides saved tariff; otherwise fallback default keeps Forecast/Savings usable.
     private double resolvePricePerKwh(User user, Double requestPricePerKwh) {
         if (requestPricePerKwh != null && requestPricePerKwh > 0) {
             return requestPricePerKwh;
@@ -473,26 +512,31 @@ public class InsightService {
         return DEFAULT_PRICE_PER_KWH;
     }
 
+    // Presentation helper: converts numeric confidence into labels shown by Smart Insights.
     private String confidenceLabel(double confidenceScore) {
         if (confidenceScore >= 0.80) return "high";
         if (confidenceScore >= 0.60) return "medium";
         return "low";
     }
 
+    // Dedupe helper: normalizes names into stable keys for ranking and duplicate removal.
     private String normalizeKey(String value) {
         return value == null
                 ? "unknown"
                 : value.trim().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-");
     }
 
+    // Math helper: keeps a value inside a minimum and maximum range.
     private double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
     }
 
+    // Math helper: rounds currency-style Savings values to two decimal places.
     private double round2(double value) {
         return Math.round(value * 100.0) / 100.0;
     }
 
+    // Frontend State: stores the ranked insights and cursor for one Generate More session.
     private static class InsightRunState {
         private final Long userId;
         private final List<RankedInsight> rankedInsights;

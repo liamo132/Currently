@@ -9,6 +9,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
+/*
+ * File: User.java
+ * Description: JPA entity and Spring Security UserDetails implementation for Currently accounts.
+ * Project: Currently
+ * Author: Liam Connell
+ *
+ */
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {
@@ -17,7 +24,7 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // user-chosen handle (NOT the Spring Security "username")
+    // Register data: user-chosen handle, encrypted at rest and separate from Spring Security getUsername().
     @Convert(converter = EncryptedStringConverter.class)
     @Column(nullable = false, unique = true)
     private String username;
@@ -35,17 +42,17 @@ public class User implements UserDetails {
     @Column(name = "email_hash", unique = true, length = 88)
     private String emailHash;
 
-    // Accept in request JSON, never include in response JSON
+    // Security: accepts password in request JSON, never includes it in response JSON.
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private String password;
 
-    // Bills Vault PIN (hashed) - never exposed
+    // Bills Vault security: stores a BCrypt PIN hash, never the plaintext PIN.
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "vault_pin_hash", length = 100)
     private String vaultPinHash;
 
-    // User-specific energy cost settings
+    // Dashboard/Forecast settings: price per kWh used by Cost and Savings calculations.
     @Column(name = "price_per_kwh")
     private Double pricePerKwh;
 
@@ -94,7 +101,7 @@ public class User implements UserDetails {
     public String getProviderName() { return providerName; }
     public void setProviderName(String providerName) { this.providerName = providerName; }
 
-    // IMPORTANT: Spring Security principal identifier should match how you authenticate (email)
+    // Authentication: Spring Security uses email as the principal identifier for JWT Login.
     @Override
     public String getUsername() {
         return email;

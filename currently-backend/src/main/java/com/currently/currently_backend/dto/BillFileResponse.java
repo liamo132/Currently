@@ -2,6 +2,10 @@ package com.currently.currently_backend.dto;
 
 import java.time.LocalDateTime;
 
+/*
+ * DTO: BillFileResponse
+ * Purpose: Sends Bills Vault file metadata to React without exposing encrypted PDF bytes.
+ */
 public class BillFileResponse {
     private Long id;
     private String originalFilename;

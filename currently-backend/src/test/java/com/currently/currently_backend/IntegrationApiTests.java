@@ -236,7 +236,7 @@ class IntegrationApiTests {
         String token = registerAndGetToken();
         String applianceBody = """
                 {
-                  "applianceName": "Portable Electric Heater",
+                  "applianceName": "Electric Heater",
                   "customName": "Office Heater",
                   "usageType": "continuous",
                   "hoursPerDay": 4
@@ -296,7 +296,7 @@ class IntegrationApiTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "applianceName": "Portable Electric Heater",
+                                  "applianceName": "Electric Heater",
                                   "usageType": "continuous",
                                   "hoursPerDay": 4,
                                   "roomId": %d
@@ -331,7 +331,7 @@ class IntegrationApiTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "applianceName": "Portable Electric Heater",
+                                  "applianceName": "Electric Heater",
                                   "usageType": "continuous",
                                   "hoursPerDay": 4
                                 }

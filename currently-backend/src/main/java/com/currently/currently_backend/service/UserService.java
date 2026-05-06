@@ -47,6 +47,11 @@ public class UserService implements UserDetailsService {
 
     @Override
     @Transactional
+    /*
+     * Service: Authentication user lookup
+     * Purpose: Spring Security calls this during Login to load the UserDetails by email.
+     * Important logic: Uses HMAC email hash so encrypted email values can still be found in the Database.
+     */
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         String emailHash = userLookupHashService.emailHash(email);
         return userRepository.findByEmailHash(emailHash)
@@ -61,6 +66,11 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 
+    /*
+     * Service: Register
+     * Purpose: Validates new account data, checks duplicate email/username hashes, hashes the password with BCrypt,
+     * writes the user to the Database, records Audit Logging, and returns a JWT for immediate login.
+     */
     public String registerUser(User user) {
 
         if (user == null) {
@@ -101,6 +111,11 @@ public class UserService implements UserDetailsService {
         return jwtUtil.generateToken(user.getEmail());
     }
 
+    /*
+     * Service: Login
+     * Purpose: Validates credentials, checks lockout status, delegates password verification to Spring Security,
+     * records successful or failed Audit Logging, and returns a JWT for authenticated API calls.
+     */
     public String loginUser(String email, String password) {
         if (email == null || email.trim().isEmpty() || password == null || password.trim().isEmpty()) {
             throw new IllegalArgumentException("Email and password are required.");
@@ -127,6 +142,7 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    // Service helper: refreshes deterministic lookup hashes for encrypted email and username fields.
     private void refreshUserHashes(User user) {
         user.setEmailHash(userLookupHashService.emailHash(user.getEmail()));
         user.setUsernameHash(userLookupHashService.usernameHash(user.getUsernameField()));

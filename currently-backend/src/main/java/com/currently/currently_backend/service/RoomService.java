@@ -31,6 +31,7 @@ public class RoomService {
         this.userLookupHashService = userLookupHashService;
     }
 
+    // Service helper: resolves the authenticated user from JWT Authentication before Room database work.
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String emailOrUsername = auth.getName();
@@ -39,6 +40,7 @@ public class RoomService {
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
     }
 
+    // Service: returns the current user's Rooms sorted for predictable Map My House display.
     public List<RoomResponse> getRoomsForCurrentUser() {
         User user = getCurrentUser();
         List<Room> rooms = roomRepository.findByUser(user);
@@ -49,6 +51,11 @@ public class RoomService {
                 .collect(Collectors.toList());
     }
 
+    /*
+     * Service: Create Room
+     * Purpose: Validates Map My House room input, attaches the Room to the authenticated user,
+     * saves it to the Database, and returns a DTO for the React frontend.
+     */
     public RoomResponse createRoom(RoomRequest request) {
         User user = getCurrentUser();
         if (request == null) {
@@ -72,6 +79,11 @@ public class RoomService {
         return toResponse(saved);
     }
 
+    /*
+     * Service: Update Room
+     * Purpose: Loads a Room by id, enforces ownership so one user cannot edit another user's Room,
+     * applies validated updates, and saves the changed entity.
+     */
     public RoomResponse updateRoom(Long id, RoomRequest request) {
         User user = getCurrentUser();
         if (request == null) {
@@ -108,6 +120,7 @@ public class RoomService {
         return toResponse(updated);
     }
 
+    // Service: deletes a Room only after confirming it belongs to the authenticated user.
     public void deleteRoom(Long id) {
         User user = getCurrentUser();
 
@@ -121,6 +134,7 @@ public class RoomService {
         roomRepository.delete(room);
     }
 
+    // DTO mapper: converts encrypted Room entity fields into the API response shape used by React.
     private RoomResponse toResponse(Room room) {
         RoomResponse res = new RoomResponse();
         res.setId(room.getId());

@@ -37,6 +37,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userLookupHashService = userLookupHashService;
     }
 
+    /*
+     * Security filter: JWT Authentication
+     * Purpose: Reads the Authorization Bearer token, validates the JWT, loads the matching user by email hash,
+     * and places an authenticated principal into Spring Security for protected API endpoints.
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -52,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7).trim();
 
-        // Defensive cleanup for malformed client headers.
+        // Validation: defensive cleanup for malformed client headers that accidentally send a JSON token object.
         token = token.replace("\"", "");
         if (token.startsWith("{") && token.contains("token")) {
             int colon = token.indexOf(':');

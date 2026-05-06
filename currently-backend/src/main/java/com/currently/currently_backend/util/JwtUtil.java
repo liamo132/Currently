@@ -39,7 +39,7 @@ public class JwtUtil {
         this.expirationMs = expirationMs;
     }
 
-    // Generate token using username
+    // JWT helper: creates a signed token with the user's email as the subject for authenticated API calls.
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
@@ -49,30 +49,33 @@ public class JwtUtil {
                 .compact();
     }
 
-    // Extract username from token
+    // JWT helper: extracts the subject from the token, which Currently treats as the Login email.
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // Generic method to extract specific claim
+    // JWT helper: extracts any single claim using a caller-provided resolver.
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    // Validate token (check username and expiry)
+    // JWT helper: validates that the token belongs to the expected user and has not expired.
     public boolean validateToken(String token, String username) {
         return username.equals(extractUsername(token)) && !isTokenExpired(token);
     }
 
+    // JWT helper: checks expiration time against the current server clock.
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
+    // JWT helper: reads the expiration claim used by Authentication validation.
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    // JWT helper: verifies the signature and returns all claims from the token body.
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(signingKey)
@@ -81,6 +84,10 @@ public class JwtUtil {
                 .getBody();
     }
 
+    /*
+     * Security helper: JWT signing key
+     * Purpose: Uses configured Base64 JWT_SECRET in production, but allows an ephemeral dev key outside prod.
+     */
     private Key buildSigningKey(Environment environment, String configuredSecret) {
         if (configuredSecret == null || configuredSecret.trim().isEmpty()) {
             if (environment.acceptsProfiles(Profiles.of("prod"))) {

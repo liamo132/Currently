@@ -3,6 +3,10 @@ package com.currently.currently_backend.dto;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 
+/*
+ * DTO: InsightGenerateRequest
+ * Purpose: Optional tariff override sent by the frontend when generating Smart Insights.
+ */
 public class InsightGenerateRequest {
     @DecimalMin(value = "0.01", message = "pricePerKwh must be greater than 0.")
     @DecimalMax(value = "5.0", message = "pricePerKwh is outside expected range.")

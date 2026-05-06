@@ -40,12 +40,18 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
         this.objectMapper = objectMapper;
     }
 
+    // Security filter: only applies rate limiting to high-risk Authentication and Bills Vault endpoints.
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
         return !(path.startsWith("/api/auth/") || path.startsWith("/api/vault/"));
     }
 
+    /*
+     * Security filter: Rate limiting
+     * Purpose: Tracks request timestamps per client IP and endpoint, rejects requests over the configured limit,
+     * and returns a consistent JSON API error instead of an HTML error page.
+     */
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -83,6 +89,7 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    // Security helper: chooses either remote address or trusted X-Forwarded-For depending on deployment config.
     private String extractClientIp(HttpServletRequest request) {
         if (!trustForwardHeaders) {
             return request.getRemoteAddr();

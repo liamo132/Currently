@@ -4,6 +4,10 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+/*
+ * DTO: LoginRequest
+ * Purpose: Validated Authentication payload for email/password Login.
+ */
 public class LoginRequest {
 
     @NotBlank(message = "Email is required.")

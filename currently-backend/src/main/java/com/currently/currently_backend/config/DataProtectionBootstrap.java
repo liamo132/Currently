@@ -14,6 +14,7 @@ public class DataProtectionBootstrap {
     @Value("${app.data.hash-key:}")
     private String hashKey;
 
+    // Encryption bootstrap: configures AES-GCM and HMAC keys before encrypted fields are read or written.
     @PostConstruct
     public void initialize() {
         DataProtectionUtil.configure(encryptionKey, hashKey);

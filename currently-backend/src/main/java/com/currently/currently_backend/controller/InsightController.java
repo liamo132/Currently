@@ -21,14 +21,17 @@ public class InsightController {
         this.insightService = insightService;
     }
 
-    // this endpoint only works for logged-in users because security config protects it
+    /*
+     * Controller API: Smart Insights generation
+     * Purpose: Starts a new recommendation run for the authenticated user using Appliance, Room, Usage, and Cost data.
+     */
     @PostMapping("/generate")
     public ResponseEntity<InsightGenerateResponse> generateInsights(@Valid @RequestBody InsightGenerateRequest request) {
         InsightGenerateResponse response = insightService.generateInsights(request);
         return ResponseEntity.ok(response);
     }
 
-    // this endpoint returns the next unseen insight batch for an existing generation run
+    // Controller API: returns the next unseen Smart Insights batch for an existing in-memory run.
     @PostMapping("/{runId}/more")
     public ResponseEntity<InsightGenerateResponse> generateMore(@PathVariable String runId) {
         InsightGenerateResponse response = insightService.generateMore(runId);

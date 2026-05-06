@@ -32,16 +32,14 @@ public class UserApplianceController {
         this.userApplianceService = userApplianceService;
     }
 
-    // Endpoint: GET /api/users/me/appliances
-    // Purpose: Return all appliances selected by the current user.
+    // Controller API: returns all Appliances selected by the current user with calculated Usage and Cost fields.
     @GetMapping
     public ResponseEntity<List<UserApplianceResponse>> getMyAppliances() {
         List<UserApplianceResponse> appliances = userApplianceService.getUserAppliances();
         return ResponseEntity.ok(appliances);
     }
 
-    // Endpoint: POST /api/users/me/appliances
-    // Purpose: Create a new user appliance entry.
+    // Controller API: creates a user Appliance entry and validates it against the catalogue usage model.
     @PostMapping
     public ResponseEntity<UserApplianceResponse> createMyAppliance(
             @Valid @RequestBody UserApplianceRequest request
@@ -50,8 +48,7 @@ public class UserApplianceController {
         return ResponseEntity.ok(created);
     }
 
-    // Endpoint: PUT /api/users/me/appliances/{id}
-    // Purpose: Update custom name or usage values for an existing user appliance.
+    // Controller API: updates Appliance name, Room assignment, or Usage fields after ownership checks in the Service.
     @PutMapping("/{id}")
     public ResponseEntity<UserApplianceResponse> updateMyAppliance(
             @PathVariable Long id,
@@ -61,8 +58,7 @@ public class UserApplianceController {
         return ResponseEntity.ok(updated);
     }
 
-    // Endpoint: DELETE /api/users/me/appliances/{id}
-    // Purpose: Delete a user appliance entry.
+    // Controller API: deletes one user Appliance after the Service confirms it belongs to the authenticated user.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMyAppliance(@PathVariable Long id) {
         userApplianceService.deleteUserAppliance(id);

@@ -18,6 +18,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // API error handler: converts @Valid DTO field errors into a consistent VALIDATION_ERROR JSON response.
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidation(
             MethodArgumentNotValidException ex,
@@ -30,6 +31,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "One or more fields are invalid.", details, request);
     }
 
+    // API error handler: converts constraint violations into frontend-readable Validation details.
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
             ConstraintViolationException ex,
@@ -40,6 +42,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "One or more request constraints failed.", details, request);
     }
 
+    // API error handler: reports missing or malformed JSON bodies without exposing parser internals.
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiErrorResponse> handleMalformedJson(
             HttpMessageNotReadableException ex,
@@ -48,6 +51,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "MALFORMED_JSON", "Request body is missing or malformed.", null, request);
     }
 
+    // API error handler: returns 401 for invalid Login credentials.
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiErrorResponse> handleBadCredentials(
             BadCredentialsException ex,
@@ -56,6 +60,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "Invalid email or password.", null, request);
     }
 
+    // API error handler: returns 400 for request Validation or business-rule failures.
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiErrorResponse> handleIllegalArgument(
             IllegalArgumentException ex,
@@ -64,6 +69,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", ex.getMessage(), null, request);
     }
 
+    // API error handler: maps forbidden ownership checks to 403 and other rejected states to conflict.
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ApiErrorResponse> handleIllegalState(
             IllegalStateException ex,
@@ -79,6 +85,7 @@ public class GlobalExceptionHandler {
         return build(status, code, message, null, request);
     }
 
+    // API error handler: last-resort response for unexpected server errors.
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnhandled(
             Exception ex,
@@ -93,6 +100,7 @@ public class GlobalExceptionHandler {
         );
     }
 
+    // API helper: builds the common error payload with timestamp and request path.
     private ResponseEntity<ApiErrorResponse> build(
             HttpStatus status,
             String code,

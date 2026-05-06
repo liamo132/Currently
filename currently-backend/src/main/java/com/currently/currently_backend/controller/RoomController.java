@@ -19,16 +19,19 @@ public class RoomController {
         this.roomService = roomService;
     }
 
+    // Controller API: fetches all Rooms for Map My House and room-based Watch Your Watts summaries.
     @GetMapping
     public ResponseEntity<List<RoomResponse>> getMyRooms() {
         return ResponseEntity.ok(roomService.getRoomsForCurrentUser());
     }
 
+    // Controller API: creates a Room owned by the authenticated user after request Validation.
     @PostMapping
     public ResponseEntity<RoomResponse> createRoom(@Valid @RequestBody RoomRequest request) {
         return ResponseEntity.ok(roomService.createRoom(request));
     }
 
+    // Controller API: updates a Room only if the Backend ownership check confirms it belongs to this user.
     @PutMapping("/{id}")
     public ResponseEntity<RoomResponse> updateRoom(
             @PathVariable Long id,
@@ -37,6 +40,7 @@ public class RoomController {
         return ResponseEntity.ok(roomService.updateRoom(id, request));
     }
 
+    // Controller API: deletes a Room owned by the authenticated user.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRoom(@PathVariable Long id) {
         roomService.deleteRoom(id);

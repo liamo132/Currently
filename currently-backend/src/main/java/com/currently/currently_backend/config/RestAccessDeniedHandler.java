@@ -22,6 +22,7 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
         this.objectMapper = objectMapper;
     }
 
+    // Security handler: returns JSON 403 responses when authenticated users lack permission for an API resource.
     @Override
     public void handle(
             HttpServletRequest request,

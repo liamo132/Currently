@@ -20,8 +20,10 @@ import java.util.List;
  */
 public interface UserApplianceRepository extends JpaRepository<UserAppliance, Long> {
 
-    // Fetch the optional room in the same database round trip so DTO mapping
-    // does not accidentally trigger one extra query per appliance.
+    /*
+     * Backend Query: returns a user's Appliances in creation order.
+     * EntityGraph fetches the optional Room in the same query to support Room summaries without extra database calls.
+     */
     @EntityGraph(attributePaths = "room")
     List<UserAppliance> findByUserOrderByCreatedAtAsc(User user);
 }

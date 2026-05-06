@@ -2,6 +2,10 @@ package com.currently.currently_backend.dto;
 
 import java.util.List;
 
+/*
+ * DTO: InsightDTO
+ * Purpose: Represents one Smart Insights recommendation with reasoning, action, confidence, and Savings values.
+ */
 public class InsightDTO {
     private String title;
     private String reasoning;

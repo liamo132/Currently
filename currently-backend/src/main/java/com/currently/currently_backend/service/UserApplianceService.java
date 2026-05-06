@@ -1,30 +1,28 @@
 /*
  * File: UserApplianceService.java
- * Description: Business logic for managing user-selected appliances and computing
- *              estimated energy usage based on the base appliance catalogue.
+ * Description: Business logic for managing user-selected appliances and calculating appliance-level energy usage.
+ * Project: Currently
  * Author: Liam Connell
- * Date: 2025-12-01
+ *
  */
 
 package com.currently.currently_backend.service;
-import com.currently.currently_backend.model.Room;
-import com.currently.currently_backend.repository.RoomRepository;
-
 
 import com.currently.currently_backend.dto.UserApplianceRequest;
 import com.currently.currently_backend.dto.UserApplianceResponse;
 import com.currently.currently_backend.model.Appliance;
+import com.currently.currently_backend.model.Room;
 import com.currently.currently_backend.model.User;
 import com.currently.currently_backend.model.UserAppliance;
+import com.currently.currently_backend.repository.RoomRepository;
 import com.currently.currently_backend.repository.UserApplianceRepository;
 import com.currently.currently_backend.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -32,17 +30,10 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-/**
- * Class: UserApplianceService
- * Purpose: Provide higher-level operations for the "My Appliances" feature,
- *          including creating, updating, deleting, and listing user appliances
- *          and calculating estimated energy usage.
- */
 @Service
 public class UserApplianceService {
 
-
-    // Example tariff: â‚¬0.30 per kWh (you can move this to config later)
+    // Cost default: fallback electricity tariff used when the user has not saved a price-per-kWh setting.
     private static final double DEFAULT_PRICE_PER_KWH = 0.30;
 
     private final UserRepository userRepository;
@@ -50,7 +41,6 @@ public class UserApplianceService {
     private final ApplianceService applianceService;
     private final RoomRepository roomRepository;
     private final UserLookupHashService userLookupHashService;
-
 
     public UserApplianceService(
             UserRepository userRepository,
@@ -66,26 +56,23 @@ public class UserApplianceService {
         this.userLookupHashService = userLookupHashService;
     }
 
-
-    // Function: getCurrentUser
-    // Purpose: Retrieve the currently authenticated user using Spring Security's context.
-    // Inputs: none
-    // Outputs: User entity from the database
+    /*
+     * Service helper: Current User
+     * Purpose: Resolves the authenticated user from Spring Security's JWT Authentication context.
+     * Output: User entity used to scope Appliance, Room, Usage, and Cost database operations.
+     */
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        // In your setup, auth.getName() should correspond to the user's email or username.
         String emailOrUsername = auth.getName();
-
-        // Adjust this if your login uses username instead of email.
         return userRepository.findByEmailHash(userLookupHashService.emailHash(emailOrUsername))
-                
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
     }
 
-    // Function: getUserAppliances
-    // Purpose: Return all UserAppliance entries for the current user with derived metrics.
-    // Inputs: none
-    // Outputs: List of UserApplianceResponse DTOs
+    /*
+     * Service: List user Appliances
+     * Purpose: Loads all Appliances saved by the authenticated user, joins Room data, and calculates derived
+     * daily kWh plus estimated daily Cost before returning DTOs to React.
+     */
     @Transactional(readOnly = true)
     public List<UserApplianceResponse> getUserAppliances() {
         User user = getCurrentUser();
@@ -98,10 +85,11 @@ public class UserApplianceService {
                 .collect(Collectors.toList());
     }
 
-    // Function: createUserAppliance
-    // Purpose: Create a new UserAppliance for the current user after validating input.
-    // Inputs: UserApplianceRequest DTO
-    // Outputs: UserApplianceResponse DTO with derived metrics
+    /*
+     * Service: Create user Appliance
+     * Purpose: Validates a new Appliance request against the catalogue, optional Room ownership, and usage rules,
+     * saves it to the Database, then returns calculated Usage and Cost values.
+     */
     @Transactional
     public UserApplianceResponse createUserAppliance(UserApplianceRequest request) {
         User user = getCurrentUser();
@@ -133,7 +121,7 @@ public class UserApplianceService {
         entity.setHoursPerDay(request.getHoursPerDay());
         entity.setUsesPerDay(request.getUsesPerDay());
 
-// ROOM ASSIGNMENT (POST)
+        // Room assignment: if roomId is supplied, verify the Room exists and belongs to the same user.
         Room room = null;
         if (request.getRoomId() != null) {
             room = roomRepository.findById(request.getRoomId())
@@ -150,14 +138,13 @@ public class UserApplianceService {
         UserAppliance saved = userApplianceRepository.save(entity);
         double pricePerKwh = resolvePricePerKwh(user);
         return mapToResponseWithDerivedValues(saved, pricePerKwh, catalogueByName());
-
     }
 
-
-    // Function: updateUserAppliance
-    // Purpose: Update an existing UserAppliance's usage values and custom name.
-    // Inputs: id (Long), request DTO
-    // Outputs: Updated UserApplianceResponse
+    /*
+     * Service: Update user Appliance
+     * Purpose: Loads an Appliance by id, confirms ownership, applies custom name, Usage, and Room changes,
+     * validates the final entity, and returns recalculated Cost values.
+     */
     @Transactional
     public UserApplianceResponse updateUserAppliance(Long id, UserApplianceRequest request) {
         User user = getCurrentUser();
@@ -168,13 +155,12 @@ public class UserApplianceService {
         UserAppliance entity = userApplianceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User appliance not found."));
 
-        // Ensure the appliance belongs to the current user
+        // Security: ensure the Appliance belongs to the current authenticated user.
         if (!entity.getUser().getId().equals(user.getId())) {
             throw new IllegalStateException("You are not allowed to modify this appliance.");
         }
 
-        // Usage type and appliance name are immutable here to keep things simple.
-        // You can relax this later if needed.
+        // Important logic: applianceName and usageType stay immutable to keep catalogue calculations consistent.
         if (request.getCustomName() != null) {
             entity.setCustomName(normalizeNullableText(request.getCustomName()));
         }
@@ -187,7 +173,7 @@ public class UserApplianceService {
             entity.setUsesPerDay(request.getUsesPerDay());
         }
 
-        // ROOM ASSIGNMENT (PUT)
+        // Room assignment: request roomId null means unassign the Appliance from a Room.
         if (request.getRoomId() != null) {
             Room room = roomRepository.findById(request.getRoomId())
                     .orElseThrow(() -> new IllegalArgumentException("Room not found"));
@@ -198,10 +184,8 @@ public class UserApplianceService {
 
             entity.setRoom(room);
         } else {
-            // Allow unassigning room if request explicitly sets roomId: null
             entity.setRoom(null);
         }
-
 
         validateUsageFieldsForEntity(entity);
 
@@ -210,13 +194,9 @@ public class UserApplianceService {
         UserAppliance updated = userApplianceRepository.save(entity);
         double pricePerKwh = resolvePricePerKwh(user);
         return mapToResponseWithDerivedValues(updated, pricePerKwh, catalogueByName());
-
     }
 
-    // Function: deleteUserAppliance
-    // Purpose: Remove a UserAppliance belonging to the current user.
-    // Inputs: id (Long)
-    // Outputs: void (throws if not found or not owned)
+    // Service: deletes one Appliance only after confirming it belongs to the authenticated user.
     @Transactional
     public void deleteUserAppliance(Long id) {
         User user = getCurrentUser();
@@ -231,14 +211,8 @@ public class UserApplianceService {
         userApplianceRepository.delete(entity);
     }
 
-    // Helper: find base appliance from catalogue
+    // Catalogue helper: finds the base Appliance metadata by name so usage formulas have wattage values.
     private Appliance findBaseApplianceOrThrow(String applianceName) {
-        // IMPORTANT:
-        // This assumes ApplianceService exposes a method like:
-        //   List<Appliance> getAllAppliances()
-        // If your method name is different, either:
-        //   - rename it, or
-        //   - add a wrapper method in ApplianceService with this signature.
         List<Appliance> catalogue = applianceService.getAllAppliances();
 
         Optional<Appliance> match = catalogue.stream()
@@ -249,7 +223,7 @@ public class UserApplianceService {
                 new IllegalArgumentException("Appliance not found in catalogue: " + applianceName));
     }
 
-    // Helper: validate usage fields for a request
+    // Validation helper: enforces the correct Usage input for continuous versus per-use Appliances.
     private void validateUsageFields(UserApplianceRequest request) {
         if ("continuous".equalsIgnoreCase(request.getUsageType())) {
             if (request.getHoursPerDay() == null || request.getHoursPerDay() <= 0) {
@@ -262,7 +236,7 @@ public class UserApplianceService {
         }
     }
 
-    // Helper: validate usage fields for an existing entity
+    // Validation helper: checks the final saved Appliance entity still has valid Usage values after an update.
     private void validateUsageFieldsForEntity(UserAppliance entity) {
         if ("continuous".equalsIgnoreCase(entity.getUsageType())) {
             if (entity.getHoursPerDay() == null || entity.getHoursPerDay() <= 0) {
@@ -275,6 +249,11 @@ public class UserApplianceService {
         }
     }
 
+    /*
+     * DTO mapper: Appliance response
+     * Purpose: Converts a UserAppliance entity into frontend JSON and adds derived Cost metrics.
+     * Important calculation: dailyKWh is multiplied by pricePerKwh to produce estimatedDailyCost.
+     */
     private UserApplianceResponse mapToResponseWithDerivedValues(
             UserAppliance entity,
             double pricePerKwh,
@@ -294,7 +273,6 @@ public class UserApplianceService {
         response.setDailyKWh(dailyKWh);
         response.setEstimatedDailyCost(dailyKWh * pricePerKwh);
 
-        // ROOM MAPPING
         Room room = entity.getRoom();
         if (room != null) {
             response.setRoomId(room.getId());
@@ -304,9 +282,8 @@ public class UserApplianceService {
         return response;
     }
 
+    // Catalogue helper: builds a normalized name lookup once per request so response mapping stays efficient.
     private Map<String, Appliance> catalogueByName() {
-        // Build the lookup once per service call. This keeps DTO mapping O(n)
-        // instead of repeatedly scanning the full catalogue for every appliance.
         return applianceService.getAllAppliances().stream()
                 .collect(Collectors.toMap(
                         appliance -> normalizeCatalogueKey(appliance.getName()),
@@ -315,6 +292,7 @@ public class UserApplianceService {
                 ));
     }
 
+    // Catalogue helper: finds an Appliance in the prebuilt lookup map using a normalized name key.
     private Appliance findBaseApplianceOrThrow(String applianceName, Map<String, Appliance> catalogueByName) {
         Appliance match = catalogueByName.get(normalizeCatalogueKey(applianceName));
         if (match == null) {
@@ -323,6 +301,7 @@ public class UserApplianceService {
         return match;
     }
 
+    // Validation helper: trims optional text and stores blank strings as null.
     private String normalizeNullableText(String value) {
         if (value == null) {
             return null;
@@ -331,6 +310,7 @@ public class UserApplianceService {
         return normalized.isEmpty() ? null : normalized;
     }
 
+    // Cost helper: resolves the user's saved electricity price or falls back to the default tariff.
     private double resolvePricePerKwh(User user) {
         Double userPrice = user.getPricePerKwh();
         if (userPrice != null && userPrice > 0) {
@@ -339,22 +319,23 @@ public class UserApplianceService {
         return DEFAULT_PRICE_PER_KWH;
     }
 
+    // Catalogue helper: normalizes Appliance names before lookup comparisons.
     private String normalizeCatalogueKey(String value) {
         return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 
-
-
-    // Helper: core energy calculation logic
+    /*
+     * Cost Calculation: daily kWh
+     * Purpose: Converts appliance wattage and usage into daily energy consumption.
+     * Formula: continuous = watts * hoursPerDay / 1000; perUse = wattHoursPerUse * usesPerDay / 1000.
+     */
     private double calculateDailyKWh(UserAppliance entity, Appliance baseAppliance) {
-        // For continuous devices: (averageWatts * hoursPerDay) / 1000
         if ("continuous".equalsIgnoreCase(entity.getUsageType())) {
             double watts = baseAppliance.getAverageWatts();
             double hours = entity.getHoursPerDay() != null ? entity.getHoursPerDay() : 0.0;
             return (watts * hours) / 1000.0;
         }
 
-        // For per-use devices: (averageWattsPerUse * usesPerDay) / 1000
         if ("perUse".equalsIgnoreCase(entity.getUsageType())) {
             double wattsPerUse = baseAppliance.getAverageWattsPerUse();
             double uses = entity.getUsesPerDay() != null ? entity.getUsesPerDay() : 0.0;
@@ -364,4 +345,3 @@ public class UserApplianceService {
         return 0.0;
     }
 }
-

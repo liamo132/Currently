@@ -26,6 +26,7 @@ public final class DataProtectionUtil {
     private DataProtectionUtil() {
     }
 
+    // Encryption setup: configures AES-GCM encryption and HMAC lookup keys from application properties/env vars.
     public static void configure(String encryptionKeyBase64, String hashKeyBase64) {
         encryptionKeySpec = toAesKey(encryptionKeyBase64);
         hashKeySpec = toHmacKey(hashKeyBase64 == null || hashKeyBase64.isBlank()
@@ -33,6 +34,10 @@ public final class DataProtectionUtil {
                 : hashKeyBase64);
     }
 
+    /*
+     * Encryption helper: text fields
+     * Purpose: Encrypts sensitive strings before Database storage using AES-GCM with a random IV per value.
+     */
     public static String encrypt(String plainText) {
         if (plainText == null) {
             return null;
@@ -56,6 +61,11 @@ public final class DataProtectionUtil {
         }
     }
 
+    /*
+     * Encryption helper: text fields
+     * Purpose: Decrypts AES-GCM protected strings after Database read; non-prefixed values are returned for
+     * backward compatibility with older plaintext rows.
+     */
     public static String decrypt(String encryptedValue) {
         if (encryptedValue == null) {
             return null;
@@ -85,6 +95,7 @@ public final class DataProtectionUtil {
         }
     }
 
+    // Security helper: creates deterministic HMAC-SHA256 hashes for searchable encrypted identifiers.
     public static String hmacSha256(String value) {
         if (value == null) {
             return null;
@@ -100,6 +111,7 @@ public final class DataProtectionUtil {
         }
     }
 
+    // Encryption helper: encrypts raw PDF bytes for Bills Vault Database storage.
     public static byte[] encryptBytes(byte[] plainBytes) {
         if (plainBytes == null) {
             return null;
@@ -122,6 +134,7 @@ public final class DataProtectionUtil {
         }
     }
 
+    // Encryption helper: decrypts raw PDF bytes when the user downloads a Bills Vault file.
     public static byte[] decryptBytes(byte[] encryptedBytes) {
         if (encryptedBytes == null) {
             return null;
@@ -143,6 +156,7 @@ public final class DataProtectionUtil {
         }
     }
 
+    // Encryption helper: lazily loads keys if DataProtectionBootstrap has not configured them yet.
     private static void ensureConfigured() {
         if (encryptionKeySpec != null && hashKeySpec != null) {
             return;
@@ -170,6 +184,7 @@ public final class DataProtectionUtil {
         }
     }
 
+    // Config helper: returns the first configured value from property or environment variable.
     private static String firstNonBlank(String first, String second) {
         if (first != null && !first.isBlank()) {
             return first;
@@ -180,6 +195,7 @@ public final class DataProtectionUtil {
         return null;
     }
 
+    // Validation helper: converts the Base64 AES key into a 32-byte SecretKeySpec for AES-256.
     private static SecretKeySpec toAesKey(String keyBase64) {
         byte[] keyBytes = Base64.getDecoder().decode(keyBase64);
         if (keyBytes.length != 32) {
@@ -188,6 +204,7 @@ public final class DataProtectionUtil {
         return new SecretKeySpec(keyBytes, ENC_ALGORITHM);
     }
 
+    // Validation helper: converts the Base64 HMAC key into a SecretKeySpec for lookup hashing.
     private static SecretKeySpec toHmacKey(String keyBase64) {
         byte[] keyBytes = Base64.getDecoder().decode(keyBase64);
         if (keyBytes.length < 32) {

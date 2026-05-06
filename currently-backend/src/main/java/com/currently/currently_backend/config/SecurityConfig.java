@@ -65,19 +65,14 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
-                // Enable CORS for frontend and disable CSRF (API-style usage)
+                // Security: enable CORS for the React frontend and disable CSRF because JWT makes this a stateless API.
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
 
-                // Authorization rules
+                // Authorization rules: auth/catalogue are public; Dashboard, Vault, Rooms, Appliances need JWT.
                 .authorizeHttpRequests(auth -> auth
-                        // Public: authentication endpoints
                         .requestMatchers("/api/auth/**").permitAll()
-
-                        // Public: appliance catalogue
                         .requestMatchers("/api/appliances/**").permitAll()
-
-                        // Everything else requires JWT
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
@@ -100,13 +95,13 @@ public class SecurityConfig {
                         })
                 )
 
-                // Register custom JWT filter BEFORE Spring's username/password filter
+                // Authentication: register custom JWT filter before Spring's username/password filter.
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
-                // Basic abuse protection for auth and vault endpoints
+                // Security: basic abuse protection for Login/Register and Bills Vault PIN endpoints.
                 .addFilterBefore(apiRateLimitFilter, JwtAuthenticationFilter.class)
 
-                // Stateless (no sessions)
+                // JWT design: keep the backend stateless with no server-side session.
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
@@ -117,7 +112,7 @@ public class SecurityConfig {
     /*
      * Bean: corsConfigurationSource
      * Purpose:
-     *   Allow the Vite dev server to call backend APIs.
+     *   Allow configured React frontend origins to call backend APIs with Authorization headers.
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -138,7 +133,7 @@ public class SecurityConfig {
     /*
      * Bean: passwordEncoder
      * Purpose:
-     *   BCrypt hashing for user passwords.
+     *   BCrypt hashing for user passwords and Bills Vault PIN hashes.
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -148,7 +143,7 @@ public class SecurityConfig {
     /*
      * Bean: authenticationManager
      * Purpose:
-     *   Required for login in AuthController (authenticationManager.authenticate).
+     *   Required for Login in AuthController/UserService when calling authenticationManager.authenticate.
      */
     @Bean
     public AuthenticationManager authenticationManager(

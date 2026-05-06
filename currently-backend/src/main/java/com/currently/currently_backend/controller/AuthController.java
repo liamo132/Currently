@@ -19,7 +19,11 @@ public class AuthController {
         this.userService = userService;
     }
 
-    // POST /api/auth/register
+    /*
+     * Controller API: Register
+     * Purpose: Accepts a new account request, delegates Validation and password hashing to UserService,
+     * and returns a JWT token so the frontend can immediately enter authenticated pages.
+     */
     @PostMapping("/register")
     public ResponseEntity<TokenResponse> registerUser(@Valid @RequestBody RegisterRequest request) {
         User user = new User();
@@ -31,8 +35,11 @@ public class AuthController {
         return ResponseEntity.ok(new TokenResponse(token));
     }
 
-    // POST /api/auth/login
-    // Body: { "email": "...", "password": "..." }
+    /*
+     * Controller API: Login
+     * Purpose: Receives email/password credentials, relies on Spring Security authentication,
+     * and returns a signed JWT when the user is valid.
+     */
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> loginUser(@Valid @RequestBody LoginRequest request) {
         String token = userService.loginUser(request.getEmail(), request.getPassword());

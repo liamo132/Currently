@@ -21,6 +21,7 @@ public class UserEnergySettingsService {
         this.userLookupHashService = userLookupHashService;
     }
 
+    // Service helper: resolves the currently authenticated User from the JWT principal stored in Spring Security.
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String emailOrUsername = auth.getName();
@@ -29,6 +30,7 @@ public class UserEnergySettingsService {
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
     }
 
+    // Service: loads the user's electricity price and provider for Dashboard, Cost, Forecast, and Savings calculations.
     public EnergySettingsResponse getSettings() {
         User user = getCurrentUser();
         Double price = user.getPricePerKwh();
@@ -36,6 +38,11 @@ public class UserEnergySettingsService {
         return new EnergySettingsResponse(price, provider);
     }
 
+    /*
+     * Service: Save energy settings
+     * Purpose: Stores the price per kWh and provider name for the authenticated user.
+     * Important logic: pricePerKwh feeds appliance Cost and Watch Your Watts Forecast calculations.
+     */
     public EnergySettingsResponse saveSettings(EnergySettingsRequest request) {
         User user = getCurrentUser();
         if (request == null) {

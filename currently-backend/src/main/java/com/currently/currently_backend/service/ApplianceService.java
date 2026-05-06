@@ -1,6 +1,7 @@
 /*
  * File: ApplianceService.java
  * Description: Loads and serves appliance metadata from appliances.json.
+ * Project: Currently
  * Author: Liam Connell
  * Date: 2025-11-12
  */
@@ -22,12 +23,17 @@ public class ApplianceService {
 
     private final List<Appliance> appliances = new ArrayList<>();
 
+    /*
+     * Service: Appliance catalogue load
+     * Purpose: Loads static appliance metadata once when Spring starts.
+     * Output: Populates an in-memory list used for Appliance Usage, Cost, and Watch Your Watts calculations.
+     */
     @PostConstruct
     public void loadAppliances() {
         try {
             ObjectMapper mapper = new ObjectMapper();
 
-            // FIXED PATH: resources/appliances/appliances.json
+            // Important logic: read the appliance catalogue packaged under src/main/resources.
             InputStream is = getClass().getResourceAsStream("/appliances/appliances.json");
 
             if (is == null) {
@@ -45,6 +51,7 @@ public class ApplianceService {
         }
     }
 
+    // Service: returns the loaded Appliance catalogue to controllers and energy calculation services.
     public List<Appliance> getAllAppliances() {
         return appliances;
     }

@@ -13,6 +13,7 @@ public class ApiErrorResponse {
     private final Instant timestamp;
     private final String path;
 
+    // API error DTO: standard response shape for Validation, Authentication, Security, and server errors.
     public ApiErrorResponse(String code, String message, Map<String, String> details, Instant timestamp, String path) {
         this.code = code;
         this.message = message;
@@ -21,6 +22,7 @@ public class ApiErrorResponse {
         this.path = path;
     }
 
+    // API error field: machine-readable code used by the frontend.
     public String getCode() {
         return code;
     }

@@ -2,6 +2,10 @@ package com.currently.currently_backend.dto;
 
 import jakarta.validation.constraints.Size;
 
+/*
+ * DTO: RoomRequest
+ * Purpose: Validated request body for creating or editing Map My House Rooms.
+ */
 public class RoomRequest {
 
     @Size(max = 80, message = "Room name must be 80 characters or fewer.")
