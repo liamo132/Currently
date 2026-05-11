@@ -4,6 +4,10 @@ import SmartInsights from './smartinsights';
 import '../shared/private-layout.css';
 import '../watchyourwatts/css/watchyourwatts.css';
 
+/*
+ * Component: SmartInsightsPage
+ * Purpose: Loads Appliance data, applies the current tariff, and renders the SmartInsights recommendation UI.
+ */
 export default function SmartInsightsPage() {
   const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
 
@@ -11,12 +15,13 @@ export default function SmartInsightsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // keeping this in sync with dashboard setting for now
+  // Frontend State: keeps tariff in sync with Dashboard settings for recommendation Cost calculations.
   const [pricePerKwh, setPricePerKwh] = useState(() => {
     const saved = localStorage.getItem('pricePerKwh');
     return saved ? Number(saved) : 0.30;
   });
 
+  // Hook: updates Smart Insights tariff if Dashboard changes pricePerKwh in local storage.
   useEffect(() => {
     const onStorage = (e) => {
       if (e.key === 'pricePerKwh') setPricePerKwh(Number(e.newValue) || 0.30);
@@ -25,6 +30,7 @@ export default function SmartInsightsPage() {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
+  // Cost Calculation: recalculates daily cost using the current tariff before sending data to SmartInsights.
   const appliancesWithCost = useMemo(
     () =>
       (appliances || []).map((a) => {
@@ -35,6 +41,7 @@ export default function SmartInsightsPage() {
     [appliances, pricePerKwh]
   );
 
+  // API helper: attaches JWT Authorization for protected Appliance endpoint.
   const fetchWithAuth = useCallback(async (url, options = {}) => {
     const token = localStorage.getItem('token');
     if (!token) throw new Error('No authentication token found. Please log in again.');
@@ -53,6 +60,7 @@ export default function SmartInsightsPage() {
     return res;
   }, []);
 
+  // Hook: loads user Appliances that the backend Smart Insights service will use for recommendations.
   useEffect(() => {
     const load = async () => {
       try {

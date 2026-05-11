@@ -63,8 +63,7 @@ public final class DataProtectionUtil {
 
     /*
      * Encryption helper: text fields
-     * Purpose: Decrypts AES-GCM protected strings after Database read; non-prefixed values are returned for
-     * backward compatibility with older plaintext rows.
+     * Purpose: Decrypts AES protected strings after Database read; non-prefixed values are returned for backward compatibility with pre-encryption plaintext rows.
      */
     public static String decrypt(String encryptedValue) {
         if (encryptedValue == null) {
@@ -95,7 +94,7 @@ public final class DataProtectionUtil {
         }
     }
 
-    // Security helper: creates deterministic HMAC-SHA256 hashes for searchable encrypted identifiers.
+    // Security helper: creates deterministic SHA256 hashes for searchable encrypted identifiers.
     public static String hmacSha256(String value) {
         if (value == null) {
             return null;

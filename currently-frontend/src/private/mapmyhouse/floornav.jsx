@@ -4,6 +4,10 @@ import { Plus, Trash2, ChevronDown, ChevronRight, MapPin, Home } from 'lucide-re
 import { getRoomIcon } from './roomUtils';
 import './css/floornav.css';
 
+/*
+ * Component: FloorNav
+ * Purpose: Left-side Map My House navigation for selecting floors, expanding room lists, and showing overview stats.
+ */
 export default function FloorNav({
   floors,
   selectedFloor,
@@ -16,7 +20,7 @@ export default function FloorNav({
 }) {
   return (
     <div className="floornav-container">
-      {/* Floor List */}
+      {/* Floor list: lets the user select a floor and view its Rooms. */}
       <div className="floornav-panel">
         <div className="floornav-header">
           <h2 className="floornav-title">Floors</h2>
@@ -34,6 +38,7 @@ export default function FloorNav({
                   <button
                     className="floor-toggle-btn"
                     onClick={(e) => {
+                      // Event handler: prevent floor selection when only expanding/collapsing the nested room list.
                       e.stopPropagation();
                       onToggleFloor(floor.id);
                     }}
@@ -50,6 +55,7 @@ export default function FloorNav({
                 <button
                   className="floor-delete-btn"
                   onClick={(e) => {
+                    // Event handler: prevent floor selection when clicking delete.
                     e.stopPropagation();
                     onDeleteFloor(floor.id);
                   }}
@@ -77,7 +83,7 @@ export default function FloorNav({
         </button>
       </div>
 
-      {/* Quick Stats */}
+      {/* Quick stats: summarizes frontend floor count and backend Room count for the demo. */}
       <div className="floornav-stats">
         <h3 className="stats-title">Overview</h3>
         <div className="stats-grid">

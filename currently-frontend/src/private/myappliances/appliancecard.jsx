@@ -23,6 +23,7 @@ function ApplianceCard({
   onUpdate,
   onRemove,
 }) {
+  // Validation helper: normalizes whole-number inputs such as continuous hours per day.
   const normaliseWholeNumber = (value, { min = 1, max } = {}) => {
     if (value === "") return undefined;
 
@@ -33,6 +34,7 @@ function ApplianceCard({
     return max !== undefined ? Math.min(boundedValue, max) : boundedValue;
   };
 
+  // Validation helper: normalizes decimal inputs such as uses per day or per week.
   const normaliseDecimalNumber = (value, { min = 0.01, max } = {}) => {
     if (value === "") return undefined;
 
@@ -43,6 +45,7 @@ function ApplianceCard({
     return max !== undefined ? Math.min(boundedValue, max) : boundedValue;
   };
 
+  // Display helper: formats numeric Usage values for compact form inputs.
   const formatNumberForInput = (value) => {
     if (value === null || value === undefined || Number.isNaN(Number(value))) {
       return "";
@@ -51,6 +54,7 @@ function ApplianceCard({
     return Number(value).toFixed(2).replace(/\.?0+$/, "");
   };
 
+  // Event handler: sends a single field update back to MyAppliances for backend persistence.
   const handleChange = useCallback(
     (field, value) => {
       if (value === undefined) return;
@@ -63,6 +67,7 @@ function ApplianceCard({
   const currentRoomId = appliance.roomId ?? null;
   const [useWeeklyInput, setUseWeeklyInput] = useState(false);
 
+  // Event handler: converts optional weekly usage input back into the backend's usesPerDay field.
   const handleUsesChange = (value) => {
     const parsed = normaliseDecimalNumber(value, {
       max: useWeeklyInput ? 700 : 100,
@@ -73,6 +78,7 @@ function ApplianceCard({
     handleChange("usesPerDay", useWeeklyInput ? parsed / 7 : parsed);
   };
 
+  // Frontend State: shows either daily uses or weekly uses while keeping backend storage daily.
   const displayedUses = useWeeklyInput
     ? formatNumberForInput((appliance.usesPerDay ?? 0) * 7)
     : formatNumberForInput(appliance.usesPerDay);

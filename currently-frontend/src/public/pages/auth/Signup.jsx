@@ -1,6 +1,8 @@
 /*
  * File: Signup.jsx
  * Description: Registration page for creating new Currently accounts.
+ * Project: Currently
+ * Author: Liam Connell
  */
 
 import React, { useEffect, useState } from "react";
@@ -8,6 +10,10 @@ import { Link } from "react-router-dom";
 import "./auth.css";
 import { register } from "../../../api/auth";
 
+/*
+ * Component: Signup
+ * Purpose: Collects account details, validates them, calls Register API, stores the JWT, and opens Dashboard.
+ */
 export default function Signup() {
   const [formData, setFormData] = useState({
     name: "",
@@ -21,6 +27,7 @@ export default function Signup() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Hook: pre-fills the Signup email from a query string when coming from another page or campaign link.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const emailFromQuery = params.get("email")?.trim();
@@ -31,6 +38,7 @@ export default function Signup() {
     setFormData((prev) => ({ ...prev, email: emailFromQuery }));
   }, []);
 
+  // Event handler: updates Register form state and clears field/server errors while the user edits.
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -38,6 +46,7 @@ export default function Signup() {
     if (serverMsg) setServerMsg("");
   };
 
+  // Validation helper: checks required Register fields and password confirmation before the backend API call.
   const validateForm = () => {
     const newErrors = {};
 
@@ -64,6 +73,10 @@ export default function Signup() {
     return newErrors;
   };
 
+  /*
+   * Event handler: Submit Register
+   * Purpose: Calls POST /api/auth/register through api/auth.js, stores the returned JWT, and redirects to Dashboard.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerMsg("");
@@ -92,6 +105,7 @@ export default function Signup() {
     }
   };
 
+  // UI helper: gives a simple client-side password strength label for the Register form.
   const passwordStrength =
     formData.password.length >= 12
       ? "Strong"

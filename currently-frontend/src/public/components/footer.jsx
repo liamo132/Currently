@@ -1,6 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+/*
+ * Component: Footer
+ * Purpose: Public landing-page footer with product, security, and account links.
+ */
 export default function Footer() {
   return (
     <footer className="site-footer" id="faq">

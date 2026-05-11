@@ -1,6 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+/*
+ * Component: Header
+ * Purpose: Public navigation for landing, Login, and Signup routes.
+ */
 const Header = () => {
   return (
     <header className="site-header">

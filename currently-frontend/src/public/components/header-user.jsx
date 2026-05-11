@@ -4,10 +4,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import './header-user.css';
 
+/*
+ * Component: HeaderUser
+ * Purpose: Private authenticated navigation shown after Login with active-page highlighting and logout.
+ */
 const Header = ({ activePage }) => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Frontend State: central list of private app pages shown in the authenticated nav.
   const pages = [
     { name: 'Dashboard',         id: 'dashboard',      path: '/dashboard' },
     { name: 'Map My House',      id: 'mapmyhouse',     path: '/mapmyhouse' },
@@ -16,12 +21,14 @@ const Header = ({ activePage }) => {
     { name: 'Smart Insights',    id: 'smartinsights',  path: '/smartinsights' }
   ];
 
+  // Event handler: logs out by clearing the JWT and returning to the Login page.
   const handleLogout = () => {
     localStorage.removeItem('token');
     setMenuOpen(false);
     navigate('/login', { replace: true });
   };
 
+  // Hook: closes the mobile menu when returning to desktop width.
   useEffect(() => {
     if (!menuOpen) return;
     const handleResize = () => {

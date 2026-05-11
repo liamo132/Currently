@@ -1,5 +1,9 @@
 import React from 'react';
 
+/*
+ * Component: SystemStatus
+ * Purpose: Shows last Dashboard data sync, Bills Vault setup state, and setup warnings.
+ */
 export default function SystemStatus({ lastSync, warnings = [], vaultActive, onVault }) {
   const last = lastSync ? new Date(lastSync).toLocaleString() : 'Unknown';
   const vaultLabel = vaultActive ? 'Bills Vault set up' : 'Bills Vault not set up';

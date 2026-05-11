@@ -25,15 +25,6 @@
   flex-wrap: wrap;
 }
 
-.smartinsights-select {
-  min-width: 240px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #fff;
-  padding: 0.6rem 0.75rem;
-  color: var(--color-text);
-}
-
 .smartinsights-btn {
   border: none;
   border-radius: 8px;
@@ -147,7 +138,6 @@
     flex-direction: column;
   }
 
-  .smartinsights-select,
   .smartinsights-btn {
     width: 100%;
     min-width: 0;

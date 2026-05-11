@@ -13,6 +13,7 @@ import ApplianceCard from "./appliancecard";
 import "../shared/private-layout.css";
 import "./css/myappliances.css";
 
+// Hook: debounces search input so Appliance filtering does not run on every keystroke.
 function useDebouncedValue(value, delayMs) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -24,11 +25,16 @@ function useDebouncedValue(value, delayMs) {
   return debouncedValue;
 }
 
+// CSV Export helper: wraps values in quotes and escapes quotes so spreadsheet imports stay valid.
 const csvEscape = (value) => {
   const text = value === null || value === undefined ? "" : String(value);
   return `"${text.replace(/"/g, '""')}"`;
 };
 
+/*
+ * Component: MyAppliances
+ * Purpose: Lets users add catalogue Appliances, edit Usage, assign Rooms, calculate Cost, and export CSV data.
+ */
 export default function MyAppliances() {
   const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8080";
 
@@ -49,7 +55,7 @@ export default function MyAppliances() {
   const [saveMessage, setSaveMessage] = useState("");
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 180);
 
-  // Authenticated fetch helper
+  // API helper: attaches JWT Authorization for protected Appliance and Room backend endpoints.
   const fetchWithAuth = useCallback(async (url, options = {}) => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -70,6 +76,11 @@ export default function MyAppliances() {
     return response;
   }, []);
 
+  /*
+   * Function: loadData
+   * Purpose: Loads public appliance catalogue, user Appliances, and Rooms in parallel for the My Appliances page.
+   * API calls: /api/appliances, /api/users/me/appliances, /api/users/me/rooms.
+   */
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
@@ -105,24 +116,28 @@ export default function MyAppliances() {
     }
   }, [API_BASE, fetchWithAuth]);
 
-  // Load catalogue + user appliances + rooms
+  // Hook: initial My Appliances data load.
   useEffect(() => {
     loadData();
   }, [loadData]);
 
+  // Hook: keeps a ref copy of Appliances so update callbacks can read the latest state without stale closures.
   useEffect(() => {
     userAppliancesRef.current = userAppliances;
   }, [userAppliances]);
 
+  // Frontend State: maps base catalogue Appliances by name for quick lookup while rendering cards.
   const baseAppliancesByName = useMemo(() => {
     return new Map(catalogue.map((appliance) => [appliance.name, appliance]));
   }, [catalogue]);
 
+  // Lookup helper: finds the base Appliance metadata used to display wattage and usage model labels.
   const findBaseAppliance = useCallback(
     (applianceName) => baseAppliancesByName.get(applianceName),
     [baseAppliancesByName]
   );
 
+  // Frontend State: converts Room API responses into select options for Appliance assignment.
   const roomOptions = useMemo(
     () =>
       rooms.map((r) => ({
@@ -133,6 +148,7 @@ export default function MyAppliances() {
     [rooms]
   );
 
+  // Dashboard metric: counts how many Appliances are assigned to Rooms.
   const assignedAppliancesCount = useMemo(
     () =>
       userAppliances.filter(
@@ -141,10 +157,12 @@ export default function MyAppliances() {
     [userAppliances]
   );
 
+  // Lookup helper: maps roomId to roomName for searching and display.
   const roomNameById = useMemo(() => {
     return new Map(roomOptions.map((room) => [room.id, room.name]));
   }, [roomOptions]);
 
+  // Catalogue filter: searches public Appliances by name or category inside the add modal.
   const filteredCatalogue = useMemo(() => {
     const search = catalogueSearch.trim().toLowerCase();
     return catalogue.filter((appliance) => {
@@ -154,6 +172,7 @@ export default function MyAppliances() {
     });
   }, [catalogue, catalogueSearch]);
 
+  // Catalogue grouping: groups filtered Appliances by category for the modal optgroups.
   const filteredCatalogueGroups = useMemo(() => {
     return filteredCatalogue.reduce((groups, appliance) => {
       const category = appliance.category || "Other";
@@ -165,6 +184,7 @@ export default function MyAppliances() {
     }, new Map());
   }, [filteredCatalogue]);
 
+  // Hook: keeps the selected add-modal Appliance valid when catalogue search changes.
   useEffect(() => {
     if (!isAddModalOpen) return;
 
@@ -182,11 +202,13 @@ export default function MyAppliances() {
     }
   }, [filteredCatalogue, isAddModalOpen, selectedBaseName]);
 
+  // Frontend State: selected catalogue Appliance shown in the add modal preview.
   const selectedBaseAppliance = useMemo(
     () => findBaseAppliance(selectedBaseName),
     [findBaseAppliance, selectedBaseName]
   );
 
+  // Display helper: converts backend usageType values into readable labels.
   const formatUsageLabel = (appliance) => {
     if (!appliance) return "";
     return appliance.usageType === "continuous"
@@ -194,6 +216,7 @@ export default function MyAppliances() {
       : "Per use";
   };
 
+  // Display helper: describes the catalogue default wattage/usage assumption before adding an Appliance.
   const formatDefaultUsage = (appliance) => {
     if (!appliance) return "";
     if (appliance.usageType === "continuous") {
@@ -202,6 +225,10 @@ export default function MyAppliances() {
     return `${appliance.averageWattsPerUse}Wh per use, ${appliance.defaultUsesPerDay}/day`;
   };
 
+  /*
+   * List calculation: filteredAppliances
+   * Purpose: Filters by search/Room and sorts by Cost, kWh, name, or Room.
+   */
   const filteredAppliances = useMemo(() => {
     // Filtering and sorting can run often while typing, so keep the search
     // debounced and derive the visible list in one memoized pass.
@@ -241,7 +268,10 @@ export default function MyAppliances() {
       });
   }, [debouncedSearchTerm, roomNameById, selectedRoomFilter, sortMode, userAppliances]);
 
-  // Add new appliance from catalogue (initially unassigned to any room)
+  /*
+   * Event handler: Add Appliance
+   * Purpose: Creates a new user Appliance from the selected catalogue item and sends it to the backend.
+   */
   const handleAddAppliance = async () => {
     if (!selectedBaseName) {
       alert("Please select an appliance from the list.");
@@ -283,12 +313,16 @@ export default function MyAppliances() {
     }
   };
 
+  // Event handler: confirms add-modal selection, creates the Appliance, and closes the modal.
   const handleConfirmAdd = async () => {
     await handleAddAppliance();
     setIsAddModalOpen(false);
   };
 
-  // Update appliance (usage, name, room)
+  /*
+   * Event handler: Update Appliance
+   * Purpose: Sends custom name, Usage, and Room changes to PUT /api/users/me/appliances/{id}.
+   */
   const handleUpdateAppliance = useCallback(async (id, updatedFields) => {
     const existing = userAppliancesRef.current.find((ua) => ua.id === id);
     if (!existing) return;
@@ -334,7 +368,7 @@ export default function MyAppliances() {
     }
   }, [API_BASE, fetchWithAuth]);
 
-  // Delete appliance
+  // Event handler: deletes one Appliance from the backend and removes it from frontend state.
   const handleRemoveAppliance = useCallback(async (id) => {
     if (!window.confirm("Remove this appliance?")) return;
 
@@ -354,11 +388,16 @@ export default function MyAppliances() {
     }
   }, [API_BASE, fetchWithAuth]);
 
+  // Event handler: shows a short save confirmation for auto-saved Appliance edits.
   const handleSave = () => {
     setSaveMessage("All appliance changes are saved.");
     window.setTimeout(() => setSaveMessage(""), 2200);
   };
 
+  /*
+   * Event handler: CSV Export
+   * Purpose: Builds a CSV from user Appliances including Room, Usage, daily kWh, and estimated Cost values.
+   */
   const handleExportCsv = () => {
     const headers = [
       "Name",

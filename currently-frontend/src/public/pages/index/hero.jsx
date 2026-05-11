@@ -2,6 +2,10 @@ import React from "react";
 import "../index/css/hero.css";
 import HeroImg from "../../assets/img/Hero.png";
 
+/*
+ * Component: Hero
+ * Purpose: Landing-page first section explaining Currently's household energy tracking value.
+ */
 export default function Hero() {
   return (
     <main className="landing-main">

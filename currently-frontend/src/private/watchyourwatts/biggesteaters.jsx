@@ -3,9 +3,12 @@ import React, { useMemo } from 'react';
 import { TrendingDown } from 'lucide-react';
 import './css/biggesteaters.css';
 
+/*
+ * Component: BiggestEaters
+ * Purpose: Shows the top five Appliances by daily Cost so users can focus on the highest-impact devices.
+ */
 const BiggestEaters = ({ appliances = [] }) => {
-  // Simple + readable: sort by € cost per day (what users actually care about)
-  // Then just take the top 5 so the card stays clean and doesn’t grow forever.
+  // Cost ranking: sort by daily Cost and take the top five so the card stays focused.
   const top5 = useMemo(() => {
     return [...(appliances || [])]
       .sort(
@@ -16,7 +19,7 @@ const BiggestEaters = ({ appliances = [] }) => {
       .slice(0, 5);
   }, [appliances]);
 
-  // Tiny “empty state” so it doesn’t look broken if user has no appliances yet.
+  // Empty state: explains why the Watch Your Watts ranking is unavailable before Appliances are added.
   if (!top5.length) {
     return (
       <div className="biggest-eaters-card">
@@ -38,10 +41,10 @@ const BiggestEaters = ({ appliances = [] }) => {
 
       <div className="appliances-list">
         {top5.map((a, index) => {
-          // Name fallback chain (student-proof): custom name -> catalogue name -> "Unknown"
+          // Display helper: custom name takes priority, then catalogue Appliance name.
           const name = a.customName || a.applianceName || 'Unknown Appliance';
 
-          // If dailyKWh exists, show it. If not, we still show €/day so the UI always has meaning.
+          // Cost display: show kWh when present, but always show daily Cost for comparison.
           const dailyKwh = Number(a.dailyKWh || 0);
           const dailyCost = Number(a.computedDailyCost ?? a.estimatedDailyCost ?? 0);
 
@@ -55,13 +58,10 @@ const BiggestEaters = ({ appliances = [] }) => {
                 <div className="appliance-name">{name}</div>
 
                 <div className="appliance-stats">
-                  €{dailyCost.toFixed(2)}/day
-                  {dailyKwh > 0 ? ` • ${dailyKwh.toFixed(2)} kWh/day` : ''}
+                  EUR {dailyCost.toFixed(2)}/day
+                  {dailyKwh > 0 ? ` - ${dailyKwh.toFixed(2)} kWh/day` : ''}
                 </div>
               </div>
-
-              {/* Removed the Reduce button:
-                  - functionality that didn’t exist yet */}
             </div>
           );
         })}

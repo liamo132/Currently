@@ -4,7 +4,12 @@ import './css/roomsummarycards.css';
 
 const UNASSIGNED_KEY = '__unassigned__';
 
+/*
+ * Component: RoomSummaryCards
+ * Purpose: Groups Appliance Usage and Cost by Room for the Room Summary tab.
+ */
 export default function RoomSummaryCards({ rooms = [], appliances = [] }) {
+  // Chart/table data: builds one summary object per Room and includes an Unassigned bucket.
   const summaries = useMemo(() => {
     const byRoom = new Map();
 
@@ -52,6 +57,7 @@ export default function RoomSummaryCards({ rooms = [], appliances = [] }) {
       .sort((a, b) => b.dailyCost - a.dailyCost || a.name.localeCompare(b.name));
   }, [rooms, appliances]);
 
+  // Cost Calculation: total daily Room cost shown in the Room Summary heading.
   const totalDailyCost = summaries.reduce((sum, room) => sum + room.dailyCost, 0);
 
   return (

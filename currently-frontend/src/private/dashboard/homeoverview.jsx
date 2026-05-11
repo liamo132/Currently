@@ -2,7 +2,7 @@ import React from 'react';
 
 /**
  * Component: HomeOverview
- * Purpose: Summarize key home metrics (rooms, appliances, floors).
+ * Purpose: Summarizes home setup progress, Room/Appliance counts, and the highest weekly Cost driver.
  */
 export default function HomeOverview({
   roomsCount,

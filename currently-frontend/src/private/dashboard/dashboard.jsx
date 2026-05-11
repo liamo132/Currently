@@ -13,15 +13,22 @@ import '../shared/private-layout.css';
 
 import './css/dashboard.css';
 
+// Cost Calculation: totals daily kWh from appliance API responses for Dashboard and Forecast summaries.
 const sumDailyKwh = (appliances = []) =>
   (appliances || []).reduce((sum, a) => sum + Number(a.dailyKWh || 0), 0);
 
+// Cost Calculation: converts daily kWh and price per kWh into daily, weekly, and monthly estimated cost.
 const calcCosts = (dailyKwh, pricePerKwh) => {
   const price = Number(pricePerKwh) || 0;
   const daily = dailyKwh * price;
   return { daily, weekly: daily * 7, monthly: daily * 30 };
 };
 
+/*
+ * Component: Dashboard
+ * Purpose: Private landing page after Login that combines energy settings, home setup progress,
+ * system status, quick actions, and estimated weekly Cost.
+ */
 export default function Dashboard() {
   const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
   const navigate = useNavigate();
@@ -30,7 +37,7 @@ export default function Dashboard() {
   const [appliances, setAppliances] = useState([]);
   const [vaultActive, setVaultActive] = useState(false);
 
-  // Cached locally so other pages can reuse the latest persisted value.
+  // Frontend State: cached locally so Watch Your Watts and Smart Insights can reuse the latest tariff value.
   const [pricePerKwh, setPricePerKwh] = useState(() => {
     const saved = localStorage.getItem('pricePerKwh');
     return saved ? Number(saved) : 0.30;
@@ -47,6 +54,7 @@ export default function Dashboard() {
   const overviewRef = useRef(null);
   const statusRef = useRef(null);
 
+  // API helper: attaches the JWT token to Dashboard calls for Rooms, Appliances, and Bills Vault status.
   const fetchWithAuth = useCallback(async (url, options = {}) => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -71,6 +79,7 @@ export default function Dashboard() {
     return res;
   }, []);
 
+  // Authentication helper: clears stale JWT state and redirects to Login when protected API calls fail.
   const handleAuthError = useCallback((err) => {
     if (err?.status === 401 || err?.status === 403) {
       localStorage.removeItem('token');
@@ -82,6 +91,7 @@ export default function Dashboard() {
     return false;
   }, [navigate]);
 
+  // Bills Vault helper: supports possible backend status payload shapes while normalizing to a boolean.
   const normalizeVaultActive = useCallback((payload, fallback) => {
     if (!payload || typeof payload !== 'object') return fallback;
     if (payload.active !== undefined) return Boolean(payload.active);
@@ -90,7 +100,7 @@ export default function Dashboard() {
     return fallback;
   }, []);
 
-  // Keep a client-side cache in sync with the persisted backend value.
+  // Hook: keep a client-side Cost cache in sync with the persisted backend value.
   useEffect(() => {
     localStorage.setItem('pricePerKwh', String(pricePerKwh));
   }, [pricePerKwh]);
@@ -99,13 +109,18 @@ export default function Dashboard() {
     localStorage.setItem('providerName', providerName);
   }, [providerName]);
 
+  /*
+   * Hook: Dashboard data load
+   * Purpose: Loads energy settings, Rooms, Appliances, and Bills Vault status from protected backend APIs.
+   * Important API calls: /api/users/me/rooms, /api/users/me/appliances, /api/vault/status.
+   */
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
         setError('');
 
-        // Energy settings (DB-backed if available)
+        // API call: Database-backed energy settings used by Cost and Forecast calculations.
         try {
           const settings = await getEnergySettings();
           if (settings) {
@@ -118,6 +133,7 @@ export default function Dashboard() {
 
         let roomsData = [];
         try {
+          // API call: Room data used for Map My House progress and Dashboard setup completeness.
           const roomsRes = await fetchWithAuth(`${API_BASE}/api/users/me/rooms`);
           roomsData = await roomsRes.json();
         } catch (err) {
@@ -126,13 +142,14 @@ export default function Dashboard() {
 
         let appsData = [];
         try {
+          // API call: Appliance data includes calculated dailyKWh used by Dashboard Cost totals.
           const appsRes = await fetchWithAuth(`${API_BASE}/api/users/me/appliances`);
           appsData = await appsRes.json();
         } catch (err) {
           console.warn('Appliances fetch failed; continuing', err);
         }
 
-        // Bills Vault status: align with /api/vault/status (used on BillsVault page)
+        // API call: Bills Vault status checks whether PIN setup is complete.
         let vault = false;
         try {
           const vaultRes = await fetchWithAuth(`${API_BASE}/api/vault/status`);
@@ -158,6 +175,7 @@ export default function Dashboard() {
     load();
   }, [API_BASE, fetchWithAuth, handleAuthError, normalizeVaultActive]);
 
+  // Event handler: persists edited Dashboard energy settings to the backend and keeps local UI responsive.
   const persistEnergySettings = useCallback(
     async (nextPrice, nextProvider) => {
       setSavingSettings(true);
@@ -176,7 +194,7 @@ export default function Dashboard() {
   const roomsCount = rooms.length;
   const appliancesCount = appliances.length;
   const floorsCount = useMemo(() => {
-    // Map My House derives floors from room.floorLabel; fall back to other fields if ever present.
+    // Map My House calculation: derives floors from room.floorLabel; fall back to other fields if ever present.
     const unique = new Set(
       (rooms || [])
         .map((r) => r?.floorLabel || r?.floor || r?.level || r?.storey || null)
@@ -185,11 +203,13 @@ export default function Dashboard() {
     return unique.size;
   }, [rooms]);
 
+  // Cost Calculation: memoizes total costs so UI updates when Appliances or pricePerKwh changes.
   const costs = useMemo(() => {
     const dailyKwh = sumDailyKwh(appliances);
     return calcCosts(dailyKwh, pricePerKwh);
   }, [appliances, pricePerKwh]);
 
+  // Validation UI: creates Dashboard setup warnings for missing tariff, Rooms, or Appliances.
   const warnings = useMemo(() => {
     const w = [];
     if (!pricePerKwh || Number(pricePerKwh) <= 0) w.push('Energy cost per kWh not set.');
@@ -198,6 +218,7 @@ export default function Dashboard() {
     return w;
   }, [pricePerKwh, roomsCount, appliancesCount]);
 
+  // Dashboard progress: tracks whether the key setup areas are complete.
   const setupItems = useMemo(
     () => [
       { id: 'price', complete: Number(pricePerKwh) > 0 },
@@ -208,11 +229,13 @@ export default function Dashboard() {
     [pricePerKwh, roomsCount, appliancesCount, vaultActive]
   );
 
+  // Dashboard progress: converts completed setup items into a percentage for the Home Overview card.
   const completenessPct = useMemo(() => {
     const done = setupItems.filter((item) => item.complete).length;
     return Math.round((done / setupItems.length) * 100);
   }, [setupItems]);
 
+  // Dashboard next actions: chooses the highest priority setup gaps and links to the relevant feature.
   const missingItems = useMemo(() => {
     const items = [];
     if (Number(pricePerKwh) <= 0) {
@@ -242,6 +265,7 @@ export default function Dashboard() {
     return items.slice(0, 2);
   }, [pricePerKwh, roomsCount, appliancesCount, navigate]);
 
+  // Cost insight: finds the top weekly Appliance cost driver shown in Home Overview.
   const highestCostHint = useMemo(() => {
     if (!Array.isArray(appliances) || appliances.length === 0 || Number(pricePerKwh) <= 0) return null;
 
@@ -259,6 +283,7 @@ export default function Dashboard() {
     return withCost[0] || null;
   }, [appliances, pricePerKwh]);
 
+  // Event handler: scrolls to a Dashboard section when a setup action targets an in-page panel.
   const scrollTo = (ref) => {
     if (!ref?.current) return;
     ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });

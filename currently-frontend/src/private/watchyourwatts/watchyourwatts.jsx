@@ -10,6 +10,11 @@ import '../shared/private-layout.css';
 import './css/watchyourwatts.css';
 import './css/watchtabs.css';
 
+/*
+ * Component: WatchYourWatts
+ * Purpose: Private analysis page that combines Room consumption, biggest Appliance costs,
+ * Cost Forecast, Bills Vault, and Room Summary tabs.
+ */
 export default function WatchYourWatts() {
   const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
 
@@ -22,13 +27,13 @@ export default function WatchYourWatts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // read-only here (user edits this in Dashboard later)
+  // Frontend State: read-only tariff here; the user edits pricePerKwh on Dashboard.
   const [pricePerKwh, setPricePerKwh] = useState(() => {
     const saved = localStorage.getItem('pricePerKwh');
     return saved ? Number(saved) : 0.30;
   });
 
-  // if dashboard changes it, this keeps it in sync when user returns to this page.
+  // Hook: keeps Watch Your Watts synced if Dashboard changes the cached pricePerKwh in another tab.
   useEffect(() => {
     const onStorage = (e) => {
       if (e.key === 'pricePerKwh') setPricePerKwh(Number(e.newValue) || 0.30);
@@ -39,6 +44,8 @@ export default function WatchYourWatts() {
 
   const navRef = useRef(null);
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
+
+  // Cost Calculation: recomputes daily Appliance cost from dailyKWh so tariff changes flow into charts.
   const appliancesWithCost = useMemo(
     () =>
       (appliances || []).map((a) => {
@@ -49,6 +56,7 @@ export default function WatchYourWatts() {
     [appliances, pricePerKwh]
   );
 
+  // Frontend State: tab definitions drive the Watch Your Watts segmented navigation.
   const tabs = useMemo(
     () => [
       { id: 'usage', label: 'Usage Breakdown' },
@@ -59,6 +67,11 @@ export default function WatchYourWatts() {
     []
   );
 
+  /*
+   * Forecast calculation: costComparison
+   * Purpose: Computes current, optimized, and saving values for daily/weekly/monthly views.
+   * Important formula: saving = current cost * selected reduction percent.
+   */
   const costComparison = useMemo(() => {
     const pct = Math.min(10, Math.max(1, Number(reductionPercent) || 1));
     const targetFraction = pct / 100;
@@ -83,6 +96,7 @@ export default function WatchYourWatts() {
     };
   }, [appliancesWithCost, reductionPercent]);
 
+  // API helper: adds JWT Authorization for protected Room and Appliance backend queries.
   const fetchWithAuth = useCallback(async (url, options = {}) => {
     const token = localStorage.getItem('token');
     if (!token) throw new Error('No authentication token found. Please log in again.');
@@ -101,15 +115,21 @@ export default function WatchYourWatts() {
     return res;
   }, []);
 
+  /*
+   * Hook: Watch Your Watts data load
+   * Purpose: Loads Rooms and user Appliances from the backend so charts can group usage by Room and Appliance.
+   */
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
         setError('');
 
+        // API call: Room data supports room-level consumption and summary cards.
         const roomsRes = await fetchWithAuth(`${API_BASE}/api/users/me/rooms`);
         const roomsData = await roomsRes.json();
 
+        // API call: Appliance data includes dailyKWh and estimatedDailyCost calculated by the backend.
         const appsRes = await fetchWithAuth(`${API_BASE}/api/users/me/appliances`);
         const appsData = await appsRes.json();
 
@@ -126,6 +146,7 @@ export default function WatchYourWatts() {
     load();
   }, [API_BASE, fetchWithAuth]);
 
+  // UI helper: positions the animated tab indicator under the active Watch Your Watts tab.
   const updateIndicator = useCallback(() => {
     const root = navRef.current;
     if (!root) return;
@@ -137,6 +158,7 @@ export default function WatchYourWatts() {
     setIndicator({ left: btnRect.left - rootRect.left, width: btnRect.width });
   }, [activeTab]);
 
+  // Hook: updates the tab indicator on tab changes and browser resize.
   useEffect(() => {
     updateIndicator();
     window.addEventListener('resize', updateIndicator);
@@ -169,7 +191,7 @@ export default function WatchYourWatts() {
           </div>
         )}
 
-        {/* tabs stay in the same place, just adding new options */}
+        {/* Watch Your Watts navigation: tab state controls which analysis panel is rendered. */}
         <div className="watchtabs-wrap" ref={navRef}>
           <div
             className="watchtabs-indicator"
@@ -197,7 +219,7 @@ export default function WatchYourWatts() {
 
         {activeTab === 'cost' && (
           <div style={{ marginTop: '1.5rem' }}>
-            {/* only keep reduction here. cost per kWh moved to Dashboard. */}
+            {/* Forecast controls: reduction percent changes projected Savings; Cost view changes daily/weekly/monthly summary. */}
             <div className="watchtabs-controls">
               <label className="watchtabs-label">
                 Target reduction (% by end of month)

@@ -74,35 +74,9 @@
   margin-bottom: 0.25rem;
 }
 
-.appliance-icon {
-  font-size: 1.25rem;
-}
-
 .appliance-stats {
   font-size: 0.875rem;
   color: #6B7280;
-}
-
-.reduce-btn {
-  padding: 0.5rem 1rem;
-  background-color: var(--color-accent);
-  color: var(--color-white);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.875rem;
-  transition: background-color 0.2s ease, transform 0.2s ease;
-  flex-shrink: 0;
-}
-
-.reduce-btn:hover {
-  background-color: #059669;
-  transform: scale(1.05);
-}
-
-.reduce-btn:active {
-  transform: scale(0.98);
 }
 
 @media (max-width: 768px) {
@@ -129,7 +103,4 @@
     flex: 1 1 calc(100% - 56px);
   }
 
-  .reduce-btn {
-    width: 100%;
-  }
 }

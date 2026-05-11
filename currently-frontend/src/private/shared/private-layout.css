@@ -34,19 +34,6 @@
   margin: 0 0 2rem 0;
 }
 
-.private-card {
-  background: var(--private-card-bg);
-  border-radius: var(--private-card-radius);
-  padding: 2rem;
-  box-shadow: var(--private-card-shadow);
-  border: var(--private-card-border);
-  animation: fadeInUp 0.4s ease-out;
-}
-
-.private-card--tight {
-  padding: 1.5rem;
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -74,7 +61,4 @@
     margin-bottom: 1.4rem;
   }
 
-  .private-card {
-    padding: 1.25rem;
-  }
 }

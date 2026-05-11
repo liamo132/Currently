@@ -17,10 +17,14 @@ import { getInitialHouseData } from './roomUtils';
 import '../shared/private-layout.css';
 import './css/mapmyhouse.css';
 
+/*
+ * Component: MapMyHouse
+ * Purpose: Lets users organize Rooms by floor and persists Room data to the Spring Boot backend.
+ */
 export default function MapMyHouse() {
   const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
 
-  // Existing house structure in state
+  // Frontend State: house structure combines frontend floor grouping with backend Room records.
   const [house, setHouse] = useState(getInitialHouseData());
 
   const [selectedFloor, setSelectedFloor] = useState('floor-1');
@@ -30,8 +34,9 @@ export default function MapMyHouse() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  /**
-   * Helper: authenticated fetch
+  /*
+   * API helper: authenticated fetch
+   * Purpose: Adds JWT Authorization to protected Map My House backend calls.
    */
   const fetchWithAuth = useCallback(async (url, options = {}) => {
     const token = localStorage.getItem('token');
@@ -53,12 +58,11 @@ export default function MapMyHouse() {
     return res;
   }, []);
 
-  /**
-   * Helper: build house state (floors + rooms) from backend rooms.
-   * Backend RoomResponse shape: { id, name, floorLabel, type }
+  /*
+   * Helper: buildHouseFromRooms
+   * Purpose: Converts backend RoomResponse data plus user Appliances into the nested floor/room structure used by UI.
+   * Backend RoomResponse shape: { id, name, floorLabel, type }.
    */
-
-  // Build house structure from rooms + appliances
 const buildHouseFromRooms = (rooms, appliances) => {
   const initial = getInitialHouseData();
   const defaultFloorName = initial.floors[0].name; // "Ground Floor"
@@ -82,7 +86,7 @@ const buildHouseFromRooms = (rooms, appliances) => {
       });
     }
 
-    // Attach appliances belonging to this room
+    // Room summary: attach Appliances belonging to this Room so the canvas can show real counts/names.
     const roomAppliances = (appliances || []).filter(
       (a) => a.roomId === room.id
     );
@@ -119,8 +123,9 @@ const buildHouseFromRooms = (rooms, appliances) => {
 
 
 
-  /**
-   * Load rooms from backend on mount.
+  /*
+   * Hook: Map My House data load
+   * Purpose: Loads Rooms and Appliances, then rebuilds the house layout with real appliance counts.
    */
 useEffect(() => {
   const loadData = async () => {
@@ -128,17 +133,17 @@ useEffect(() => {
       setLoading(true);
       setError('');
 
-      // 1) Rooms
+      // API call: loads Rooms owned by the authenticated user.
       const roomsRes = await fetchWithAuth(`${API_BASE}/api/users/me/rooms`);
       const roomsData = await roomsRes.json();
 
-      // 2) User appliances
+      // API call: loads Appliances so each Room can display assigned device names/counts.
       const appliancesRes = await fetchWithAuth(
         `${API_BASE}/api/users/me/appliances`
       );
       const appliancesData = await appliancesRes.json();
 
-      // 3) Build house structure with real appliance counts
+      // Frontend State: build house structure with real appliance counts.
       const houseData = buildHouseFromRooms(roomsData, appliancesData);
       setHouse(houseData);
 
@@ -158,11 +163,12 @@ useEffect(() => {
 }, [API_BASE, fetchWithAuth]);
 
 
-  /**
-   * Floor operations (pure frontend; floors are derived from Room.floorLabel).
-   * Note: empty floors will only exist in frontend until a room is added.
+  /*
+   * Floor operations
+   * Purpose: Floors are frontend groupings derived from Room.floorLabel; empty floors exist locally until a Room is added.
    */
 
+    // Event handler: adds a new frontend floor group, capped at three floors for a manageable demo UI.
     const addFloor = () => {
     const MAX_FLOORS = 3;
 
@@ -196,6 +202,7 @@ useEffect(() => {
   };
 
 
+    // Event handler: deletes an empty non-ground frontend floor group.
     const deleteFloor = (floorId) => {
     const initial = getInitialHouseData();
     const defaultFloorName = initial.floors[0].name; // e.g. "Ground Floor"
@@ -231,6 +238,7 @@ useEffect(() => {
   };
 
 
+  // Event handler: expands/collapses a floor in the left navigation.
   const toggleFloor = (floorId) => {
     setExpandedFloors((prev) =>
       prev.includes(floorId)
@@ -239,10 +247,10 @@ useEffect(() => {
     );
   };
 
-  /**
-   * Room operations wired to backend
+  /*
+   * Event handler: Add Room
+   * Purpose: Sends POST /api/users/me/rooms, then inserts the created Room into the selected floor.
    */
-
   const addRoom = async (roomData) => {
     const floor = house.floors.find((f) => f.id === selectedFloor);
     if (!floor) {
@@ -264,7 +272,7 @@ useEffect(() => {
         body: JSON.stringify(payload),
       });
 
-      const created = await res.json(); // RoomResponse
+      const created = await res.json(); // API response: RoomResponse from the backend.
 
       const newRoom = {
         id: created.id,
@@ -287,6 +295,10 @@ useEffect(() => {
     }
   };
 
+  /*
+   * Event handler: Update Room
+   * Purpose: Sends PUT /api/users/me/rooms/{id} and updates the matching Room in frontend state.
+   */
   const updateRoom = async (roomData) => {
     if (!editingRoom) return;
 
@@ -310,7 +322,7 @@ useEffect(() => {
         }
       );
 
-      const updated = await res.json(); // RoomResponse
+      const updated = await res.json(); // API response: updated RoomResponse.
 
       const updatedFloors = house.floors.map((f) => {
         if (f.id === selectedFloor) {
@@ -333,6 +345,7 @@ useEffect(() => {
     }
   };
 
+  // Event handler: deletes a backend Room and removes it from the selected floor UI.
   const deleteRoom = async (roomId) => {
     if (!window.confirm('Delete this room?')) return;
 
@@ -360,16 +373,19 @@ useEffect(() => {
     }
   };
 
+  // Event handler: opens RoomForm in edit mode with the selected Room.
   const startEditRoom = (room) => {
     setEditingRoom(room);
     setShowRoomForm(true);
   };
 
+  // Event handler: opens RoomForm in add mode for the currently selected floor.
   const startAddRoom = () => {
     setEditingRoom(null);
     setShowRoomForm(true);
   };
 
+  // Event handler: closes the Room modal and clears edit state.
   const closeRoomForm = () => {
     setShowRoomForm(false);
     setEditingRoom(null);

@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import './css/energycostsettings.css';
 
+/*
+ * Component: EnergyCostSettings
+ * Purpose: Lets the user view and edit price per kWh and provider name used across Cost and Forecast features.
+ */
 export default function EnergyCostSettings({
   pricePerKwh,
   setPricePerKwh,
@@ -14,11 +18,13 @@ export default function EnergyCostSettings({
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState('');
 
+  // Hook: refreshes the editable draft whenever the saved Dashboard tariff changes.
   useEffect(() => {
     setDraftCents(Number(pricePerKwh || 0) * 100);
     setDraftProvider(providerName || '');
   }, [pricePerKwh, providerName]);
 
+  // Event handler: validates the tariff, updates Dashboard state, and persists to the backend when provided.
   const savePrice = async () => {
     if (!Number.isFinite(draftCents) || draftCents < 0) {
       setError('Please enter a valid non-negative cost per kWh.');
@@ -34,6 +40,7 @@ export default function EnergyCostSettings({
     setIsEditing(false);
   };
 
+  // Event handler: discards unsaved tariff edits and restores the current saved values.
   const cancelEdit = () => {
     setDraftCents(Number(pricePerKwh || 0) * 100);
     setDraftProvider(providerName || '');

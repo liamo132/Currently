@@ -4,11 +4,16 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { Zap } from 'lucide-react';
 import './css/roomconsumption.css';
 
+/*
+ * Component: RoomConsumption
+ * Purpose: Builds a pie chart showing how daily kWh usage is distributed across Rooms.
+ */
 const RoomConsumption = ({ rooms, appliances }) => {
+  // Chart data: sums dailyKWh by Room and converts each Room into a percentage of total usage.
   const data = useMemo(() => {
     const byRoomName = new Map();
 
-    // Seed room buckets by room name
+    // Room grouping: seed buckets by Room id so assigned Appliances are counted correctly.
     (rooms || []).forEach((r) => byRoomName.set(r.id, { name: r.name, value: 0 }));
 
     const UNASSIGNED_KEY = '__unassigned__';

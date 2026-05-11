@@ -1,6 +1,10 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import './css/billsvault.css';
 
+/*
+ * Component: BillsVault
+ * Purpose: Frontend UI for the PIN-protected bill upload, list, download, and delete workflow.
+ */
 export default function BillsVault() {
   const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
 
@@ -15,6 +19,7 @@ export default function BillsVault() {
   const [sessionPin, setSessionPin] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Frontend State: summarizes stored bills for the unlocked Vault dashboard.
   const fileSummary = useMemo(() => {
     const totalBytes = files.reduce((sum, f) => sum + Number(f.fileSize || 0), 0);
     const newest = files
@@ -30,6 +35,7 @@ export default function BillsVault() {
     };
   }, [files]);
 
+  // API helper: attaches JWT Authorization for protected Bills Vault endpoints.
   const fetchWithAuth = useCallback(async (url, options = {}) => {
     const token = localStorage.getItem('token');
     if (!token) throw new Error('No auth token');
@@ -52,6 +58,10 @@ export default function BillsVault() {
     return res;
   }, []);
 
+  /*
+   * Hook: Bills Vault initial status
+   * Purpose: Calls /api/vault/status to decide whether to show PIN setup or locked unlock UI.
+   */
   useEffect(() => {
     const init = async () => {
       try {
@@ -65,6 +75,10 @@ export default function BillsVault() {
     init();
   }, [API_BASE, fetchWithAuth]);
 
+  /*
+   * Event handler: Create PIN
+   * Purpose: Validates matching 4-digit PINs, calls POST /api/vault/pin, and opens the Vault after setup.
+   */
   const createPin = async () => {
     setError('');
     setIsLoading(true);
@@ -100,6 +114,7 @@ export default function BillsVault() {
     }
   };
 
+  // Event handler: verifies a 4-digit PIN through POST /api/vault/unlock before showing files.
   const unlockVault = async () => {
     setError('');
     setIsLoading(true);
@@ -128,6 +143,7 @@ export default function BillsVault() {
     }
   };
 
+  // API function: loads bill metadata from POST /api/vault/files/list using the current session PIN.
   const loadFiles = async (pinToUse = sessionPin) => {
     try {
       const res = await fetchWithAuth(`${API_BASE}/api/vault/files/list`, {
@@ -142,6 +158,7 @@ export default function BillsVault() {
     }
   };
 
+  // Event handler: stores the selected PDF and pre-fills a display filename without changing file content.
   const handleFileSelect = (e) => {
     const selectedFile = e.target.files[0];
     setFile(selectedFile);
@@ -154,6 +171,11 @@ export default function BillsVault() {
     }
   };
 
+  /*
+   * Event handler: Upload PDF
+   * Purpose: Sends a selected PDF to POST /api/vault/files with the session PIN; backend handles Upload Validation,
+   * Encryption, Database storage, and Audit Logging.
+   */
   const uploadFile = async () => {
     setError('');
     setInfo('');
@@ -194,6 +216,10 @@ export default function BillsVault() {
     }
   };
 
+  /*
+   * Event handler: Download PDF
+   * Purpose: Calls the backend download endpoint with the PIN, receives decrypted PDF bytes, and triggers a browser download.
+   */
   const downloadFile = async (id, filename) => {
     setError('');
     setIsLoading(true);
@@ -221,6 +247,7 @@ export default function BillsVault() {
     }
   };
 
+  // Event handler: deletes one Vault file after confirmation and refreshes the metadata list.
   const deleteFile = async (id) => {
     if (!window.confirm('Delete this file?')) return;
 
@@ -238,6 +265,7 @@ export default function BillsVault() {
     }
   };
 
+  // Event handler: clears the in-memory session PIN and returns the Vault to the locked state.
   const lockVault = () => {
     setSessionPin('');
     setStep('locked');
@@ -246,7 +274,7 @@ export default function BillsVault() {
     setCustomFilename('');
   };
 
-  // ---- RENDER STATES ----
+  // Render state: the Vault switches between loading, setup, locked, and unlocked screens.
 
   if (step === 'loading') {
     return (

@@ -5,11 +5,16 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
+/*
+ * Component: WeeklyCostHero
+ * Purpose: Highlights estimated weekly electricity Cost and animates the first non-zero value.
+ */
 export default function WeeklyCostHero({ weeklyCost = 0 }) {
   const [displayValue, setDisplayValue] = useState(0);
   const hasAnimatedRef = useRef(false);
   const rafRef = useRef(null);
 
+  // Hook: animates the displayed weekly Cost once, then directly updates for later tariff/appliance changes.
   useEffect(() => {
     if (weeklyCost == null) return;
 
@@ -21,6 +26,7 @@ export default function WeeklyCostHero({ weeklyCost = 0 }) {
       const start = performance.now();
       const from = 0;
       const to = target;
+      // Animation helper: easeOutCubic makes the Cost number settle smoothly instead of moving linearly.
       const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
       const step = (ts) => {

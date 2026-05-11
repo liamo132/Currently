@@ -18,9 +18,14 @@ import MapMyHouse from "./private/mapmyhouse/mapmyhouse.jsx";
 import WatchYourWatts from "./private/watchyourwatts/watchyourwatts.jsx";
 import SmartInsightsPage from "./private/smartinsights/smartinsightspage.jsx";
 
+/*
+ * Component: HashScrollManager
+ * Purpose: Supports landing-page hash links such as /#features while accounting for the fixed header height.
+ */
 function HashScrollManager() {
   const { pathname, hash } = useLocation();
 
+  // Hook: scrolls to top or to a section whenever the public route/hash changes.
   useEffect(() => {
     if (!hash) {
       if (pathname === "/") {

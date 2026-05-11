@@ -3,6 +3,10 @@ import { Link } from "react-router-dom";
 import "./auth.css";
 import { login } from "../../../api/auth";
 
+/*
+ * Component: Login
+ * Purpose: Collects email/password credentials, calls the backend Login API, stores the JWT, and opens Dashboard.
+ */
 export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
@@ -10,6 +14,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Event handler: updates Login form state and clears field/server errors while the user edits.
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -17,6 +22,7 @@ export default function Login() {
     if (serverMsg) setServerMsg("");
   };
 
+  // Validation helper: performs quick client-side Login checks before calling the backend.
   const validateForm = () => {
     const newErrors = {};
     if (!formData.email) newErrors.email = "Email is required";
@@ -25,6 +31,10 @@ export default function Login() {
     return newErrors;
   };
 
+  /*
+   * Event handler: Submit Login
+   * Purpose: Calls POST /api/auth/login through api/auth.js, stores the returned JWT, and redirects to Dashboard.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerMsg("");

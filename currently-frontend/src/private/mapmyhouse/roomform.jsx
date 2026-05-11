@@ -3,12 +3,17 @@ import React, { useState, useEffect } from 'react';
 import { ROOM_TEMPLATES } from './roomUtils';
 import './css/roomform.css';
 
+/*
+ * Component: RoomForm
+ * Purpose: Modal form used for both creating and editing Map My House Rooms.
+ */
 export default function RoomForm({ room, onSave, onClose }) {
   const [formData, setFormData] = useState({
     name: '',
     type: 'Kitchen'
   });
 
+  // Hook: when editing, pre-fills the form with the selected Room's current name and type.
   useEffect(() => {
     if (room) {
       setFormData({
@@ -18,6 +23,7 @@ export default function RoomForm({ room, onSave, onClose }) {
     }
   }, [room]);
 
+  // Event handler: validates a Room name before sending the form data back to MapMyHouse.
   const handleSubmit = (e) => {
     e.preventDefault();
     

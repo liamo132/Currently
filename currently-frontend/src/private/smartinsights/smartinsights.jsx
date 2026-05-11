@@ -1,6 +1,10 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import '../watchyourwatts/css/smartinsights.css';
 
+/*
+ * Component: SmartInsights
+ * Purpose: Lets users generate and page through backend-ranked recommendations from their current Appliance Usage.
+ */
 export default function SmartInsights({ appliances = [], pricePerKwh = 0.3 }) {
   const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
 
@@ -12,8 +16,10 @@ export default function SmartInsights({ appliances = [], pricePerKwh = 0.3 }) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
 
+  // Frontend State: prevents insight generation until the user has Appliance data.
   const hasAppliances = useMemo(() => (appliances || []).length > 0, [appliances]);
 
+  // API helper: attaches JWT Authorization for protected Smart Insights endpoints.
   const fetchWithAuth = useCallback(async (url, options = {}) => {
     const token = localStorage.getItem('token');
     if (!token) throw new Error('No authentication token found. Please log in again.');
@@ -32,6 +38,10 @@ export default function SmartInsights({ appliances = [], pricePerKwh = 0.3 }) {
     return res;
   }, []);
 
+  /*
+   * Event handler: Generate Insights
+   * Purpose: Calls POST /api/insights/generate with the current tariff and stores the returned recommendations.
+   */
   const handleGenerate = async () => {
     if (!hasAppliances) return;
 
@@ -40,7 +50,7 @@ export default function SmartInsights({ appliances = [], pricePerKwh = 0.3 }) {
       setError('');
       setStopReason('');
 
-      // Send the latest tariff value so insight calculations stay aligned with the UI.
+      // API call: send the latest tariff value so backend Cost calculations stay aligned with the UI.
       const res = await fetchWithAuth(`${API_BASE}/api/insights/generate`, {
         method: 'POST',
         body: JSON.stringify({
@@ -65,6 +75,10 @@ export default function SmartInsights({ appliances = [], pricePerKwh = 0.3 }) {
     }
   };
 
+  /*
+   * Event handler: Generate More
+   * Purpose: Uses runId to request the next batch from POST /api/insights/{runId}/more.
+   */
   const handleGenerateMore = async () => {
     if (!runId || !hasMore) return;
 

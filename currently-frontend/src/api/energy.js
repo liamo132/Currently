@@ -2,6 +2,7 @@
 // Energy cost settings API helpers.
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
 
+// API helper: adds the JWT Authorization header required by protected Dashboard energy settings endpoints.
 const authHeaders = () => {
   const token = localStorage.getItem('token');
   if (!token) throw new Error('No authentication token found. Please log in again.');
@@ -11,6 +12,7 @@ const authHeaders = () => {
   };
 };
 
+// API helper: parses JSON success/error responses from the Spring Boot backend.
 const parseJsonOrThrow = async (res) => {
   const text = await res.text();
   let data;
@@ -30,8 +32,12 @@ const parseJsonOrThrow = async (res) => {
   return data;
 };
 
+/*
+ * Function: getEnergySettings
+ * Purpose: Loads pricePerKwh and providerName for Dashboard, Forecast, and Savings calculations.
+ */
 export async function getEnergySettings() {
-  // GET /api/users/me/energy-settings -> { pricePerKwh, providerName }
+  // API call: GET /api/users/me/energy-settings -> { pricePerKwh, providerName }
   const res = await fetch(`${API_BASE}/api/users/me/energy-settings`, {
     method: 'GET',
     headers: authHeaders(),
@@ -43,8 +49,12 @@ export async function getEnergySettings() {
   return parseJsonOrThrow(res);
 }
 
+/*
+ * Function: saveEnergySettings
+ * Purpose: Persists the user's electricity tariff settings to the backend database.
+ */
 export async function saveEnergySettings(payload) {
-  // PUT /api/users/me/energy-settings with { pricePerKwh, providerName }
+  // API call: PUT /api/users/me/energy-settings with { pricePerKwh, providerName }
   const res = await fetch(`${API_BASE}/api/users/me/energy-settings`, {
     method: 'PUT',
     headers: authHeaders(),

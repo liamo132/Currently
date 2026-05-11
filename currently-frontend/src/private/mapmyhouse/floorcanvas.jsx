@@ -4,6 +4,10 @@ import { Plus, Edit2, Trash2, Home } from 'lucide-react';
 import { getRoomColor, getRoomIcon } from './roomUtils';
 import './css/floorcanvas.css';
 
+/*
+ * Component: FloorCanvas
+ * Purpose: Displays the selected floor's Rooms as cards and exposes add/edit/delete Room actions.
+ */
 export default function FloorCanvas({ floor, onAddRoom, onEditRoom, onDeleteRoom }) {
   return (
     <div className="floorcanvas-container">
@@ -39,6 +43,7 @@ export default function FloorCanvas({ floor, onAddRoom, onEditRoom, onDeleteRoom
             <p className="room-type">{room.type}</p>
             <div className="room-footer">
               <span className="room-appliance-count">
+                {/* Room display: lists Appliances assigned to this Room from My Appliances. */}
                 {room.appliances && room.appliances.length > 0 && (
                   <ul className="room-appliance-list">
                      {room.appliances.map((a) => (

@@ -1,5 +1,9 @@
 import React from 'react';
 
+/*
+ * Component: QuickActions
+ * Purpose: Provides Dashboard shortcuts into Smart Insights, My Appliances, Map My House, and Bills Vault.
+ */
 export default function QuickActions({
   onVault,
   onAppliances,

@@ -1,6 +1,7 @@
 import React from "react";
 import "../index/css/features.css";
 
+// Landing Page content: key Currently capabilities shown before Signup.
 const pillars = [
   {
     title: "Track your highest-cost devices",
@@ -20,6 +21,10 @@ const pillars = [
   },
 ];
 
+/*
+ * Component: Features
+ * Purpose: Public landing sections that explain Appliance tracking, Map My House, Smart Insights, and Bills Vault value.
+ */
 export default function Features() {
   return (
     <>
